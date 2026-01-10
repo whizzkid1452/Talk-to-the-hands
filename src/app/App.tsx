@@ -1,10 +1,17 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Home } from "./Home";
 import { About } from "./About";
 import { useCustomCursor } from "./hooks/useCustomCursor";
 import { DefaultLayout } from "./components/DefaultLayout";
-import { RetroSidebar } from "./components/RetroSidebar";
+import { RetroSidebar } from "./components/RetroSidebar/index";
+
+// 모든 페이지를 lazy loading으로 로드
+const PostPage = lazy(() => import("./PostPage").then(module => ({ default: module.PostPage })));
+const GamePage = lazy(() => import("./GamePage").then(module => ({ default: module.GamePage })));
+const MusicPage = lazy(() => import("./MusicPage").then(module => ({ default: module.MusicPage })));
+const CodePage = lazy(() => import("./CodePage").then(module => ({ default: module.CodePage })));
+const DiaryPage = lazy(() => import("./DiaryPage").then(module => ({ default: module.DiaryPage })));
 
 /**
  * App 컴포넌트
@@ -14,7 +21,7 @@ import { RetroSidebar } from "./components/RetroSidebar";
  * - DefaultLayout: 배경, 커서 효과, 레이아웃 구조
  * 
  * React Router를 사용하여 URL 기반 라우팅을 구현합니다.
- * 새로운 페이지를 추가할 때는 Routes에 Route를 추가하면 됩니다.
+ * 모든 페이지는 lazy loading으로 로드되어 초기 번들 크기를 최적화합니다.
  */
 export default function App() {
   useCustomCursor();
@@ -26,11 +33,24 @@ export default function App() {
       
       {/* DefaultLayout - 모든 페이지에 공통 레이아웃 */}
       <DefaultLayout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          {/* 새로운 페이지는 여기에 Route를 추가하세요 */}
-        </Routes>
+        <Suspense fallback={
+          <div className="w-full min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mb-4"></div>
+              <p className="text-pink-500 font-mono text-sm">페이지 로딩 중...</p>
+            </div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/post" element={<PostPage />} />
+            <Route path="/game" element={<GamePage />} />
+            <Route path="/music" element={<MusicPage />} />
+            <Route path="/code" element={<CodePage />} />
+            <Route path="/diary" element={<DiaryPage />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </Suspense>
       </DefaultLayout>
     </>
   );

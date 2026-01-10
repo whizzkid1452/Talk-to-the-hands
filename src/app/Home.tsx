@@ -1,19 +1,8 @@
 import React from "react";
 import { RetroDateClock } from "./components/RetroDateClock";
 import { RetroPlanner } from "./components/RetroPlanner";
-import { RetroWindow } from "./components/RetroWindow";
-import { RetroImage } from "./components/RetroImage";
-import { KoreanRetroWindow } from "./components/KoreanRetroWindow";
-import { KoreanPixelGallery } from "./components/KoreanPixelGallery";
-import { RetroPostPage } from "./components/RetroPostPage";
-import { RetroDiaryPage } from "./components/RetroDiaryPage";
-import { PixelCDPlayer } from "./components/PixelCDPlayer";
 import { Y2KTextBox } from "./components/Y2KTextBox";
 import { Y2KSticker } from "./components/Y2KSticker";
-import { RetroMiniGame } from "./components/RetroMiniGame";
-import { PrincessRunnerGame } from "./components/PrincessRunnerGame";
-import { RetroTVGame } from "./components/RetroTVGame";
-import { PixelGrid } from "./components/PixelGrid";
 
 export function Home() {
   return (
@@ -109,16 +98,6 @@ export function Home() {
       
       {/* Planner below the clock */}
       <RetroPlanner />
-      
-      <RetroPostPage />
-      <RetroDiaryPage />
-      <RetroImage />
-      <KoreanPixelGallery />
-      <PixelGrid />
-      <PixelCDPlayer />
-      <RetroMiniGame />
-      <PrincessRunnerGame />
-      <RetroTVGame />
     </>
   );
 }
