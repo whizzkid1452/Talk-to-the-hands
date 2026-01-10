@@ -5,26 +5,27 @@ import {
   Home, 
   Gamepad2, 
   Music, 
-  Palette, 
   Code, 
-  Mail, 
-  Settings,
+  FileText,
+  BookOpen,
+  Info,
   X,
   Star,
   Heart
 } from "lucide-react";
+import { usePage } from "../App";
 
 export function RetroSidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { icon: Home, label: "홈", color: "#e91e63" },
-    { icon: Gamepad2, label: "게임", color: "#9c27b0" },
-    { icon: Music, label: "음악", color: "#00bcd4" },
-    { icon: Palette, label: "미술", color: "#ffeb3b" },
-    { icon: Code, label: "코드", color: "#4caf50" },
-    { icon: Mail, label: "메일", color: "#ff5722" },
-    { icon: Settings, label: "설정", color: "#607d8b" },
+    { icon: Home, label: "home", color: "#e91e63" },
+    { icon: FileText, label: "post", color: "#ff5722" },
+    { icon: Gamepad2, label: "game", color: "#9c27b0" },
+    { icon: Music, label: "music", color: "#00bcd4" },
+    { icon: Code, label: "code", color: "#4caf50" },
+    { icon: BookOpen, label: "diary", color: "#ff9800" },
+    { icon: Info, label: "about", color: "#607d8b" },
   ];
 
   return (
@@ -89,7 +90,8 @@ function SidebarContent({
   menuItems: Array<{ icon: any; label: string; color: string }>;
   onClose?: () => void;
 }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const { currentPage, setCurrentPage } = usePage();
+  const activeIndex = menuItems.findIndex(item => item.label === currentPage);
 
   return (
     <div className="h-full flex flex-col">
@@ -157,7 +159,7 @@ function SidebarContent({
               whileHover={{ x: 8, scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                setActiveIndex(index);
+                setCurrentPage(item.label as any);
                 if (onClose) onClose();
               }}
               className={`w-full p-3 mb-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3 transition-all ${

@@ -1,24 +1,13 @@
 import React from "react";
-import { RetroDateClock } from "./components/RetroDateClock";
-import { RetroPlanner } from "./components/RetroPlanner";
 import { RetroWindow } from "./components/RetroWindow";
-import { RetroImage } from "./components/RetroImage";
-import { RetroSidebar } from "./components/RetroSidebar";
 import { KoreanRetroWindow } from "./components/KoreanRetroWindow";
-import { KoreanPixelGallery } from "./components/KoreanPixelGallery";
-import { RetroPostPage } from "./components/RetroPostPage";
-import { RetroDiaryPage } from "./components/RetroDiaryPage";
 import { CursorSparkles } from "./components/CursorSparkles";
-import { PixelCDPlayer } from "./components/PixelCDPlayer";
 import { Y2KCollageBackground } from "./components/Y2KCollageBackground";
-import { Y2KTextBox } from "./components/Y2KTextBox";
+import { RetroSidebar } from "./components/RetroSidebar";
 import { Y2KSticker } from "./components/Y2KSticker";
-import { RetroMiniGame } from "./components/RetroMiniGame";
-import { PrincessRunnerGame } from "./components/PrincessRunnerGame";
-import { RetroTVGame } from "./components/RetroTVGame";
-import { PixelGrid } from "./components/PixelGrid";
+import { Y2KTextBox } from "./components/Y2KTextBox";
 
-export function Home() {
+export function About() {
   return (
     <div 
       className="min-h-screen w-full bg-gradient-to-br from-pink-300 via-purple-200 to-pink-200 relative overflow-x-hidden"
@@ -58,56 +47,7 @@ export function Home() {
                   textShadow: "3px 3px 0px rgba(255, 105, 180, 0.5)"
                 }}
               >
-                TALK
-              </span>
-            </Y2KTextBox>
-            
-            <Y2KTextBox variant="purple" rotation={2}>
-              <span 
-                className="text-2xl md:text-4xl font-bold text-pink-600"
-                style={{ 
-                  fontFamily: "'Press Start 2P', monospace",
-                  textShadow: "3px 3px 0px rgba(147, 112, 219, 0.5)"
-                }}
-              >
-                TO
-              </span>
-            </Y2KTextBox>
-            
-            <Y2KTextBox variant="gradient" rotation={-2}>
-              <span 
-                className="text-2xl md:text-4xl font-bold text-white"
-                style={{ 
-                  fontFamily: "'Press Start 2P', monospace",
-                  textShadow: "3px 3px 0px rgba(0, 0, 0, 0.3)"
-                }}
-              >
-                THE
-              </span>
-            </Y2KTextBox>
-          </div>
-          
-          <div className="flex flex-wrap justify-center gap-2 md:gap-4">
-            <Y2KTextBox variant="white" rotation={3}>
-              <span 
-                className="text-2xl md:text-4xl font-bold text-pink-500"
-                style={{ 
-                  fontFamily: "'Press Start 2P', monospace",
-                  textShadow: "3px 3px 0px rgba(255, 20, 147, 0.3)"
-                }}
-              >
-                HAND
-              </span>
-            </Y2KTextBox>
-            
-            <Y2KTextBox variant="pink" rotation={-1}>
-              <span 
-                className="text-xl md:text-2xl text-purple-700"
-                style={{ 
-                  fontFamily: "'DungGeunMo', monospace",
-                }}
-              >
-                💕✨
+                ABOUT
               </span>
             </Y2KTextBox>
           </div>
@@ -121,21 +61,11 @@ export function Home() {
           </div>
         </div>
         
-        {/* Date Clock at the top */}
-        <RetroDateClock />
-        
-        {/* Planner below the clock */}
-        <RetroPlanner />
-        
-        <RetroPostPage />
-        <RetroDiaryPage />
-        <RetroImage />
-        <KoreanPixelGallery />
-        <PixelGrid />
-        <PixelCDPlayer />
-        <RetroMiniGame />
-        <PrincessRunnerGame />
-        <RetroTVGame />
+        {/* Retro Windows */}
+        <div className="space-y-6 md:space-y-8">
+          <RetroWindow />
+          <KoreanRetroWindow />
+        </div>
       </div>
       
       {/* Footer with Y2K style */}
