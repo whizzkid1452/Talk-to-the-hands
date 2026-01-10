@@ -63,27 +63,19 @@ export function RetroPostCard({
           className="text-white text-sm md:text-base mb-1"
           style={{ fontFamily: "'Press Start 2P', monospace" }}
         >
-          {title}
+          {title.toUpperCase()}
         </h2>
-        {titleKo && (
-          <h3
-            className="text-white/90 text-xs md:text-sm"
-            style={{ fontFamily: "'DungGeunMo', monospace" }}
-          >
-            {titleKo}
-          </h3>
-        )}
       </div>
 
       {/* Meta Info */}
       <div className="bg-[#fce4ec] p-2 md:p-3 border-b-2 border-[#ec407a] flex flex-wrap gap-2 md:gap-4 text-xs">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-[0.25rem]">
           <User className="w-3 h-3 md:w-4 md:h-4 text-[#e91e63]" />
           <span style={{ fontFamily: "'DungGeunMo', monospace" }}>
             {author}
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-[0.25rem]">
           <Clock className="w-3 h-3 md:w-4 md:h-4 text-[#9c27b0]" />
           <span style={{ fontFamily: "'VT323', monospace" }}>{date}</span>
         </div>
@@ -99,19 +91,21 @@ export function RetroPostCard({
         </p>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {tags.map((tag) => (
-            <motion.span
-              key={tag}
-              whileHover={{ scale: 1.1 }}
-              className="inline-flex items-center gap-1 px-2 md:px-3 py-1 bg-[#f8bbd0] border-2 border-[#ec407a] text-[10px] md:text-xs"
-              style={{ fontFamily: "'DungGeunMo', monospace" }}
-            >
-              <Tag className="w-3 h-3" />
-              {tag}
-            </motion.span>
-          ))}
-        </div>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {tags.map((tag) => (
+              <motion.span
+                key={tag}
+                whileHover={{ scale: 1.1 }}
+                className="inline-flex items-center gap-[0.25rem] px-2 md:px-3 py-1 bg-[#f8bbd0] border-2 border-[#ec407a] text-[10px] md:text-xs"
+                style={{ fontFamily: "'DungGeunMo', monospace" }}
+              >
+                <Tag className="w-3 h-3" />
+                {tag}
+              </motion.span>
+            ))}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-2 md:gap-3 pt-4 border-t-2 border-[#fce4ec]">
@@ -119,49 +113,37 @@ export function RetroPostCard({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleLikeClick}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-colors ${
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all text-xs md:text-sm ${
               isLiked
                 ? "bg-[#e91e63] text-white"
                 : "bg-white text-[#e91e63] hover:bg-[#fce4ec]"
             }`}
+            style={{ fontFamily: "'DungGeunMo', monospace" }}
           >
             <Heart
               className={`w-4 h-4 md:w-5 md:h-5 ${isLiked ? "fill-current" : ""}`}
             />
-            <span
-              className="text-xs md:text-sm"
-              style={{ fontFamily: "'DungGeunMo', monospace" }}
-            >
-              {likes}
-            </span>
+            <span>{likes}</span>
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-[#9c27b0] hover:bg-[#fce4ec] transition-colors"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-[#9c27b0] hover:bg-[#fce4ec] transition-all text-xs md:text-sm"
+            style={{ fontFamily: "'DungGeunMo', monospace" }}
           >
             <MessageCircle className="w-4 h-4 md:w-5 md:h-5" />
-            <span
-              className="text-xs md:text-sm"
-              style={{ fontFamily: "'DungGeunMo', monospace" }}
-            >
-              {comments}
-            </span>
+            <span>{comments}</span>
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-[#00bcd4] hover:bg-[#fce4ec] transition-colors ml-auto"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-[#00bcd4] hover:bg-[#fce4ec] transition-all ml-auto text-xs md:text-sm"
+            style={{ fontFamily: "'DungGeunMo', monospace" }}
           >
             <Share2 className="w-4 h-4 md:w-5 md:h-5" />
-            <span
-              className="text-xs md:text-sm hidden md:inline"
-              style={{ fontFamily: "'DungGeunMo', monospace" }}
-            >
-              Share
-            </span>
+            <span className="hidden md:inline">Share</span>
           </motion.button>
         </div>
       </div>

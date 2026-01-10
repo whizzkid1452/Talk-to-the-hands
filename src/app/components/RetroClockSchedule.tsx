@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { Rocket, Star, Globe } from "lucide-react";
-import clockFace from "../../assets/002dc8cbd4f552ec41b7a16c0b76dd9d24378a61.png";
+import clockFace from "../../assets/clock.svg";
 import clockHands from "../../assets/6fbec32352ad5303a91422d16828415111459df1.png";
 
 interface TimeSlot {
@@ -166,14 +166,7 @@ export function RetroClockSchedule() {
           <motion.img
             src={clockFace}
             alt="Clock Background"
-            className="absolute inset-0 pointer-events-none rounded-full"
-            style={{
-              width: "120%",
-              height: "120%",
-              left: "-10%",
-              top: "-10%",
-              objectFit: "cover"
-            }}
+            className="absolute -left-[10%] -top-[10%] w-[120%] h-[120%] object-cover pointer-events-none rounded-full"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.3 }}
@@ -210,11 +203,10 @@ export function RetroClockSchedule() {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     transform={`rotate(${textPos.angle}, ${textPos.x}, ${textPos.y})`}
+                    className="fill-[#333] pointer-events-none"
                     style={{ 
                       fontFamily: "'DungGeunMo', monospace",
                       fontSize: slot.endHour - slot.startHour >= 3 ? "14px" : "11px",
-                      fill: "#333",
-                      pointerEvents: "none"
                     }}
                   >
                     {slot.title}
@@ -236,11 +228,9 @@ export function RetroClockSchedule() {
                     y={pos.y}
                     textAnchor="middle"
                     dominantBaseline="middle"
+                    className="fill-[#333] pointer-events-none text-[8px]"
                     style={{
                       fontFamily: "'Press Start 2P', monospace",
-                      fontSize: "8px",
-                      fill: "#333",
-                      pointerEvents: "none"
                     }}
                   >
                     {displayHour}
@@ -258,13 +248,7 @@ export function RetroClockSchedule() {
           <motion.img
             src={clockHands}
             alt="Clock Hands"
-            className="absolute top-1/2 left-1/2 pointer-events-none"
-            style={{
-              width: "80%",
-              height: "80%",
-              transform: "translate(-50%, -50%)",
-              objectFit: "contain",
-            }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 object-contain pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1 }}

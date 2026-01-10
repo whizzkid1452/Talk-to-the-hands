@@ -89,8 +89,8 @@ export function RetroDiaryCard({
               {date}
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4 text-[#9c27b0]" />
+          <div className="flex items-center gap-[0.25rem]">
+            <Clock className="w-3 h-3 md:w-4 md:h-4 text-[#9c27b0]" />
             <span
               className="text-[#9c27b0] text-xs"
               style={{ fontFamily: "'VT323', monospace" }}
