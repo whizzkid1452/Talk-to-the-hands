@@ -3,13 +3,22 @@ import {
   ArrowLeft, Heart, MessageCircle, Share2, Clock, User, Tag, Eye, 
   Code, Link as LinkIcon, Quote, List, ListOrdered, FileText, Book
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useBackButton } from "../../contexts/BackButtonContext";
 
 interface RetroMarkdownPostProps {
   onBack: () => void;
 }
 
 export function RetroMarkdownPost({ onBack }: RetroMarkdownPostProps) {
+  const { setHasBackButton } = useBackButton();
+
+  useEffect(() => {
+    setHasBackButton(true);
+    return () => {
+      setHasBackButton(false);
+    };
+  }, [setHasBackButton]);
   const [likes, setLikes] = useState(42);
   const [isLiked, setIsLiked] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -53,14 +62,14 @@ export function RetroMarkdownPost({ onBack }: RetroMarkdownPostProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-5xl mx-auto"
+      className="w-full max-w-5xl mx-auto pt-16 md:pt-20"
     >
-      {/* Back Button */}
+      {/* Back Button - Fixed */}
       <motion.button
         whileHover={{ scale: 1.05, x: -5 }}
         whileTap={{ scale: 0.95 }}
         onClick={onBack}
-        className="flex items-center gap-2 px-4 py-2 mb-4 bg-white border-4 border-[#FF1493] shadow-[4px_4px_0px_0px_rgba(255,20,147,0.5)] text-[#e91e63]"
+        className="fixed top-4 left-4 md:left-6 lg:left-[280px] z-50 flex items-center gap-2 px-4 py-2 bg-white border-4 border-[#FF1493] shadow-[4px_4px_0px_0px_rgba(255,20,147,0.5)] text-[#e91e63]"
         style={{ imageRendering: "pixelated" }}
       >
         <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />

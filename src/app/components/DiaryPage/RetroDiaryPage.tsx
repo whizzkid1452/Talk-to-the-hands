@@ -2,7 +2,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { RetroDiaryCard } from "./RetroDiaryCard";
 import { RetroDiaryEditor } from "./RetroDiaryEditor";
 import { Book, PenTool, Heart, Star, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useBackButton } from "../../contexts/BackButtonContext";
 
 interface DiaryEntry {
   id: number;
@@ -92,19 +93,25 @@ export function RetroDiaryPage() {
     setSelectedDiary(diary);
   };
 
+  const { setHasBackButton } = useBackButton();
+
   const handleCloseDetail = () => {
     setSelectedDiary(null);
   };
 
+  useEffect(() => {
+    setHasBackButton(selectedDiary !== null);
+  }, [selectedDiary, setHasBackButton]);
+
   // Detail View
   if (selectedDiary) {
     return (
-      <div className="w-full max-w-4xl mx-auto mt-6 md:mt-8 px-4">
+      <div className="w-full max-w-4xl mx-auto mt-6 md:mt-8 px-4 pt-16 md:pt-20">
         <motion.button
           whileHover={{ scale: 1.05, x: -5 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleCloseDetail}
-          className="flex items-center gap-2 px-4 py-2 mb-4 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-[#e91e63]"
+          className="fixed top-4 left-4 md:left-6 lg:left-[280px] z-50 flex items-center gap-2 px-4 py-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-[#e91e63]"
         >
           <Book className="w-4 h-4 md:w-5 md:h-5" />
           <span

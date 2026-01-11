@@ -4,9 +4,14 @@ import { Menu, X } from "lucide-react";
 interface MobileToggleButtonProps {
   isOpen: boolean;
   onToggle: () => void;
+  hide?: boolean;
 }
 
-export function MobileToggleButton({ isOpen, onToggle }: MobileToggleButtonProps) {
+export function MobileToggleButton({ isOpen, onToggle, hide = false }: MobileToggleButtonProps) {
+  if (hide) {
+    return null;
+  }
+
   return (
     <motion.button
       whileHover={{ scale: 1.1 }}

@@ -5,6 +5,7 @@ import { About } from "./components/AboutPage/About";
 import { useCustomCursor } from "./hooks/useCustomCursor";
 import { DefaultLayout } from "./components/layouts/DefaultLayout";
 import { RetroSidebar } from "./components/RetroSidebar/index";
+import { BackButtonProvider } from "./contexts/BackButtonContext";
 
 // 모든 페이지를 lazy loading으로 로드
 const PostPage = lazy(() => import("./components/PostPage/PostPage").then(module => ({ default: module.PostPage })));
@@ -27,7 +28,7 @@ export default function App() {
   useCustomCursor();
 
   return (
-    <>
+    <BackButtonProvider>
       {/* RetroSidebar - 모든 페이지에 공통으로 적용되는 사이드바 */}
       <RetroSidebar />
       
@@ -52,6 +53,6 @@ export default function App() {
           </Routes>
         </Suspense>
       </DefaultLayout>
-    </>
+    </BackButtonProvider>
   );
 }
