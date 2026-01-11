@@ -1,8 +1,8 @@
 import React from "react";
-import { CursorSparkles } from "./CursorSparkles";
-import { Y2KCollageBackground } from "./Y2KCollageBackground";
-import { Y2KTextBox } from "./Y2KTextBox";
-import { Y2KSticker } from "./Y2KSticker";
+import { CursorSparkles } from "./background/CursorSparkles";
+import { Y2KCollageBackground } from "./background/Y2KCollageBackground";
+import { Y2KTextBox } from "./stickers/Y2KTextBox";
+import { Y2KSticker } from "./stickers/Y2KSticker";
 
 interface DefaultLayoutProps {
   children?: React.ReactNode;

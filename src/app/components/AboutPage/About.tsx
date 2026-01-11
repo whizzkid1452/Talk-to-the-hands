@@ -1,8 +1,8 @@
 import React from "react";
-import { RetroWindow } from "./RetroWindow";
-import { KoreanRetroWindow } from "./KoreanRetroWindow";
-import { Y2KSticker } from "./Y2KSticker";
-import { Y2KTextBox } from "./Y2KTextBox";
+import { RetroWindow } from "../layouts/RetroWindow";
+import { KoreanRetroWindow } from "../layouts/KoreanRetroWindow";
+import { Y2KSticker } from "../layouts/stickers/Y2KSticker";
+import { Y2KTextBox } from "../layouts/stickers/Y2KTextBox";
 
 export function About() {
   return (

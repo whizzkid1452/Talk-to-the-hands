@@ -4,8 +4,8 @@ import { RetroPostDetail } from "./RetroPostDetail";
 import { RetroMarkdownPost } from "./RetroMarkdownPost";
 import { PenTool, Star, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { loadPosts } from "../posts/loadPosts";
-import type { Post } from "../posts/utils";
+import { loadPosts } from "../../posts/loadPosts";
+import type { Post } from "../../posts/utils";
 
 export function RetroPostPage() {
   const [selectedPost, setSelectedPost] = useState<number | null>(null);

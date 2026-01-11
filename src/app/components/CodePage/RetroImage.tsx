@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import retroImg from "../../assets/1aefa39ed038157c019efc53a3a935ca5cc707b9.png";
+import retroImg from "../../../assets/1aefa39ed038157c019efc53a3a935ca5cc707b9.png";
 
 export function RetroImage() {
   return (

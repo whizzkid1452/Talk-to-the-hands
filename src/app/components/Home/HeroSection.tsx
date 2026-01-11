@@ -1,6 +1,6 @@
 import React from "react";
-import { Y2KTextBox } from "../Y2KTextBox";
-import { Y2KSticker } from "../Y2KSticker";
+import { Y2KTextBox } from "../layouts/stickers/Y2KTextBox";
+import { Y2KSticker } from "../layouts/stickers/Y2KSticker";
 import { titleBoxStyles, stickerConfig } from "./styles";
 
 /**

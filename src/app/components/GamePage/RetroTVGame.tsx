@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
 import { Heart, Star, Trophy, Crown, Volume2, VolumeX, Sparkles, Circle } from "lucide-react";
-import tvFrame from "../../assets/a4c2387cc1f716bddb12291ecce2aba5d13893b0.png";
+import tvFrame from "../../../assets/a4c2387cc1f716bddb12291ecce2aba5d13893b0.png";
 
 interface Obstacle {
   id: number;
