@@ -4,67 +4,16 @@ import { RetroDiaryEditor } from "./RetroDiaryEditor";
 import { Book, PenTool, Heart, Star, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBackButton } from "../../contexts/BackButtonContext";
-
-interface DiaryEntry {
-  id: number;
-  date: string;
-  time: string;
-  title: string;
-  titleKo: string;
-  content: string;
-  mood: "happy" | "neutral" | "sad";
-  weather: string;
-}
+import { loadDiaries } from "../../diary/loadDiaries";
+import type { DiaryEntry } from "../../diary/utils";
 
 export function RetroDiaryPage() {
   const [showEditor, setShowEditor] = useState(false);
   const [selectedDiary, setSelectedDiary] = useState<DiaryEntry | null>(null);
-  const [diaries, setDiaries] = useState<DiaryEntry[]>([
-    {
-      id: 1,
-      date: "2024.12.31",
-      time: "23:45",
-      title: "END OF YEAR",
-      titleKo: "한 해의 마지막 밤",
-      content:
-        "2024년의 마지막 날이에요. The last day of 2024. 올해도 많은 일들이 있었지만, 모두 소중한 추억이 되었습니다. Looking back at all the memories made this year. 내년에는 더 많은 픽셀 아트를 그리고 싶어요! 새해 복 많이 받으세요! 🎆",
-      mood: "happy",
-      weather: "맑음 ☀️ Sunny",
-    },
-    {
-      id: 2,
-      date: "2024.12.25",
-      time: "18:30",
-      title: "CHRISTMAS DAY",
-      titleKo: "크리스마스 이브",
-      content:
-        "메리 크리스마스! Merry Christmas everyone! 오늘은 친구들과 함께 레트로 게임 대회를 했어요. We played retro games all day long. 슈퍼 마리오, 팩맨, 테트리스까지! 옛날 게임은 해도 해도 질리지 않네요. The simple joy of classic gaming never gets old! 🎮🎄",
-      mood: "happy",
-      weather: "눈 ❄️ Snowy",
-    },
-    {
-      id: 3,
-      date: "2024.12.20",
-      time: "14:20",
-      title: "RAINY AFTERNOON",
-      titleKo: "비 오는 오후",
-      content:
-        "오늘은 하루 종일 비가 내렸어요. It rained all day today. 창밖을 보며 8비트 음악을 들었습니다. Listening to chiptune music while watching the rain. 비 오는 날의 감성과 레트로 음악이 참 잘 어울려요. The combination is just perfect for a cozy day. ☔🎵",
-      mood: "neutral",
-      weather: "비 🌧️ Rainy",
-    },
-    {
-      id: 4,
-      date: "2024.12.15",
-      time: "21:15",
-      title: "PIXEL PRACTICE",
-      titleKo: "픽셀 아트 연습",
-      content:
-        "오늘 처음으로 32x32 캐릭터를 완성했어요! Completed my first 32x32 character today! 5시간이나 걸렸지만 정말 뿌듯합니다. Took 5 hours but totally worth it. 한 픽셀 한 픽셀 정성스럽게 찍다 보니 어느새 완성! Every pixel placed with care and love. 내일은 배경도 그려봐야겠어요! 💾✨",
-      mood: "happy",
-      weather: "흐림 ☁️ Cloudy",
-    },
-  ]);
+  
+  // 마크다운 파일에서 다이어리 로드
+  const loadedDiaries = loadDiaries();
+  const [diaries, setDiaries] = useState<DiaryEntry[]>(loadedDiaries);
 
   const handleSaveDiary = (entry: {
     title: string;
