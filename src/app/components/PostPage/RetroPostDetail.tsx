@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Heart, MessageCircle, Share2, Clock, User, Tag, Eye, Code, Link as LinkIcon, Quote } from "lucide-react";
 import { useState, useEffect } from "react";
-import { RetroMarkdownRenderer } from "./RetroMarkdownRenderer";
+import { RetroMarkdownRenderer } from "./MarkdownPosts/RetroMarkdownRenderer";
 import { useBackButton } from "../../contexts/BackButtonContext";
 
 interface PostDetailProps {

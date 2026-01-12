@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { RetroPostCard } from "./RetroPostCard";
 import { RetroPostDetail } from "./RetroPostDetail";
-import { RetroMarkdownPost } from "./RetroMarkdownPost";
+import { RetroMarkdownPost } from "./MarkdownPosts/RetroMarkdownPost";
 import { PenTool, Star, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { loadPosts } from "../../posts/loadPosts";
