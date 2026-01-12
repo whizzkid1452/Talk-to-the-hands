@@ -4,8 +4,8 @@ import { RetroGuestBookEditor } from "./RetroGuestBookEditor";
 import { MessageSquare, PenTool, Heart, Star, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBackButton } from "../../contexts/BackButtonContext";
-import { loadGuestBooks } from "../../diary/loadDiaries";
-import type { GuestBookEntry } from "../../diary/utils";
+import { loadGuestBooks } from "../../../../diary/loadDiaries";
+import type { GuestBookEntry } from "../../../../diary/utils";
 
 export function RetroGuestBookPage() {
   const [showEditor, setShowEditor] = useState(false);

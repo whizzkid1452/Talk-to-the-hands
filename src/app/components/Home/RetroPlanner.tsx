@@ -1,23 +1,46 @@
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RetroPlannerTask } from "./RetroPlannerTask";
 import { RetroPlannerEditor } from "./RetroPlannerEditor";
 import { 
-  Calendar, Plus, ChevronLeft, ChevronRight, CheckCircle2, Star, Grid3x3, List,
-  Pencil, Brush, Square, Circle as CircleIcon, Eraser, 
-  Droplet, Type, Image as ImageIcon,
+  ChevronLeft, ChevronRight, CheckCircle2, Star, Grid3x3, List,
+  Image as ImageIcon,
   Heart, X, Minimize2, Maximize2, Sparkles
 } from "lucide-react";
-import { useState } from "react";
-
-interface Task {
-  id: number;
-  title: string;
-  time: string;
-  category: string;
-  priority: "high" | "medium" | "low";
-  completed: boolean;
-  date: string;
-}
+import type { Task } from "./RetroPlanner.types";
+import { 
+  paletteColors, 
+  tools, 
+  tasksPerPage, 
+  weekdays, 
+  menuItems 
+} from "./RetroPlanner.constants";
+import {
+  formatDate,
+  formatDisplayDate,
+  getWeekDates,
+  getMonthDates,
+  getMonthYearDisplay,
+} from "./RetroPlanner.utils";
+import {
+  containerStyles,
+  buttonStyles,
+  textStyles,
+  borderStyles,
+  decorationStyles,
+  calendarStyles,
+  taskStyles,
+  tooltipStyles,
+  getWindowBorderStyle,
+  getCanvasGradient,
+  getPixelGridPattern,
+  getProgressPattern,
+  getFontStyle,
+  getViewModeButtonStyle,
+  getWeekDayStyle,
+  getMonthDayStyle,
+  getTaskPriorityStyle,
+} from "./RetroPlanner.styles";
 
 export function RetroPlanner() {
   const [showEditor, setShowEditor] = useState(false);
@@ -27,7 +50,6 @@ export function RetroPlanner() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [showTaskDetail, setShowTaskDetail] = useState(false);
-  const tasksPerPage = 4;
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 1,
@@ -67,27 +89,6 @@ export function RetroPlanner() {
     },
   ]);
 
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  const formatDisplayDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-    const weekdaysEn = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-    const dayOfWeek = date.getDay();
-
-    return {
-      full: `${year}.${month}.${day}`,
-      weekdayKo: weekdays[dayOfWeek],
-      weekdayEn: weekdaysEn[dayOfWeek],
-    };
-  };
 
   const handleToday = () => {
     setSelectedDate(new Date());
@@ -148,98 +149,9 @@ export function RetroPlanner() {
     setCurrentPage(1);
   };
 
-  // Get week dates
-  const getWeekDates = () => {
-    const week = [];
-    const today = new Date(selectedDate);
-    const dayOfWeek = today.getDay();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - dayOfWeek);
+  const weekDates = getWeekDates(selectedDate, tasks, selectedDateStr);
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      const dateStr = formatDate(date);
-      const dayTasks = tasks.filter((t) => t.date === dateStr);
-      week.push({
-        date,
-        dateStr,
-        day: date.getDate(),
-        isToday: dateStr === formatDate(new Date()),
-        isSelected: dateStr === selectedDateStr,
-        taskCount: dayTasks.length,
-        completedCount: dayTasks.filter((t) => t.completed).length,
-      });
-    }
-    return week;
-  };
-
-  const weekDates = getWeekDates();
-
-  // Get month dates
-  const getMonthDates = () => {
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDay = firstDay.getDay();
-    const daysInMonth = lastDay.getDate();
-
-    const dates = [];
-    
-    // Previous month's trailing days
-    const prevMonthLastDay = new Date(year, month, 0).getDate();
-    for (let i = startDay - 1; i >= 0; i--) {
-      const date = new Date(year, month - 1, prevMonthLastDay - i);
-      dates.push({
-        date,
-        dateStr: formatDate(date),
-        day: date.getDate(),
-        isCurrentMonth: false,
-        isToday: formatDate(date) === formatDate(new Date()),
-        isSelected: formatDate(date) === selectedDateStr,
-        taskCount: 0,
-        completedCount: 0,
-      });
-    }
-
-    // Current month days
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const dateStr = formatDate(date);
-      const dayTasks = tasks.filter((t) => t.date === dateStr);
-      dates.push({
-        date,
-        dateStr,
-        day,
-        isCurrentMonth: true,
-        isToday: dateStr === formatDate(new Date()),
-        isSelected: dateStr === selectedDateStr,
-        taskCount: dayTasks.length,
-        completedCount: dayTasks.filter((t) => t.completed).length,
-      });
-    }
-
-    // Next month's leading days
-    const remainingDays = 42 - dates.length;
-    for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(year, month + 1, day);
-      dates.push({
-        date,
-        dateStr: formatDate(date),
-        day: date.getDate(),
-        isCurrentMonth: false,
-        isToday: formatDate(date) === formatDate(new Date()),
-        isSelected: formatDate(date) === selectedDateStr,
-        taskCount: 0,
-        completedCount: 0,
-      });
-    }
-
-    return dates;
-  };
-
-  const monthDates = getMonthDates();
+  const monthDates = getMonthDates(selectedDate, tasks, selectedDateStr);
 
   const handlePrevPeriod = () => {
     const newDate = new Date(selectedDate);
@@ -261,49 +173,15 @@ export function RetroPlanner() {
     handleDateChange(newDate);
   };
 
-  const getMonthYearDisplay = () => {
-    const year = selectedDate.getFullYear();
-    const month = selectedDate.getMonth() + 1;
-    const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
-    const monthNamesEn = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-    return {
-      full: `${year}.${String(month).padStart(2, "0")}`,
-      monthKo: monthNames[selectedDate.getMonth()],
-      monthEn: monthNamesEn[selectedDate.getMonth()],
-    };
-  };
-
-  const monthDisplay = getMonthYearDisplay();
-
-  // Pink palette colors
-  const paletteColors = [
-    "#FF1493", "#FF69B4", "#FFB6C1", "#FFC0CB", "#FFE4E1", 
-    "#FADADD", "#F8BBD0", "#F48FB1", "#F06292", "#EC407A",
-    "#E91E63", "#C2185B", "#AD1457", "#880E4F", "#FF4081",
-    "#F50057", "#C51162", "#D5006D", "#E91E8C", "#FF6EC7",
-    "#FF85D7", "#FF9CE7", "#FFB3F7", "#FFC9FF", "#FFE0FF",
-    "#EE82EE", "#DA70D6", "#DDA0DD", "#EE82EE", "#FF00FF",
-  ];
-
-  // Tool icons
-  const tools = [
-    { icon: Pencil, label: "Pencil", color: "#FF69B4" },
-    { icon: Brush, label: "Brush", color: "#FF1493" },
-    { icon: Eraser, label: "Eraser", color: "#FFB6C1" },
-    { icon: Droplet, label: "Fill", color: "#F06292" },
-    { icon: Type, label: "Text", color: "#E91E63" },
-    { icon: Square, label: "Rectangle", color: "#EC407A" },
-    { icon: CircleIcon, label: "Circle", color: "#FF4081" },
-    { icon: Plus, label: "Add Task", color: "#C2185B" },
-  ];
+  const monthDisplay = getMonthYearDisplay(selectedDate);
 
   return (
-    <div className="w-full max-w-6xl mx-auto mb-6 md:mb-8 relative">
+    <div className={containerStyles.wrapper}>
       {/* Floating pixel hearts */}
       {[...Array(8)].map((_, i) => (
         <motion.div
           key={`heart-deco-${i}`}
-          className="absolute pointer-events-none z-20"
+          className={decorationStyles.floatingHeart}
           style={{
             top: `${10 + (i * 10)}%`,
             left: i % 2 === 0 ? "auto" : `${5 + (i * 3)}%`,
@@ -328,7 +206,7 @@ export function RetroPlanner() {
       {[...Array(6)].map((_, i) => (
         <motion.div
           key={`star-deco-${i}`}
-          className="absolute pointer-events-none z-20"
+          className={decorationStyles.floatingStar}
           style={{
             top: `${15 + (i * 15)}%`,
             left: `${10 + (i * 15)}%`,
@@ -351,20 +229,14 @@ export function RetroPlanner() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#c0c0c0] border-2 border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] relative"
-        style={{ 
-          borderTopColor: "#ffffff", 
-          borderLeftColor: "#ffffff", 
-          borderRightColor: "#808080", 
-          borderBottomColor: "#808080",
-          imageRendering: "pixelated"
-        }}
+        className={containerStyles.mainContainer}
+        style={getWindowBorderStyle()}
       >
         {/* Title Bar - Pink Pixel Style */}
-        <div className="bg-gradient-to-r from-[#FF1493] via-[#FF69B4] to-[#FF1493] px-2 py-1 flex items-center justify-between">
+        <div className={containerStyles.titleBar}>
           <div className="flex items-center gap-2">
             <ImageIcon className="w-4 h-4 text-white" style={{ imageRendering: "pixelated" }} />
-            <span className="text-white text-xs" style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}>
+            <span className={textStyles.title} style={getFontStyle("'Press Start 2P'")}>
               PINK PLANNER.EXE
             </span>
           </div>
@@ -373,22 +245,22 @@ export function RetroPlanner() {
               whileHover={{ backgroundColor: "#ff69b4" }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsMinimized(!isMinimized)}
-              className="w-5 h-5 bg-[#c0c0c0] border flex items-center justify-center"
-              style={{ borderTopColor: "#ffffff", borderLeftColor: "#ffffff", borderRightColor: "#808080", borderBottomColor: "#808080", imageRendering: "pixelated" }}
+              className={buttonStyles.windowControl}
+              style={getWindowBorderStyle()}
             >
               <Minimize2 className="w-3 h-3" />
             </motion.button>
             <motion.button
               whileHover={{ backgroundColor: "#ff69b4" }}
-              className="w-5 h-5 bg-[#c0c0c0] border flex items-center justify-center"
-              style={{ borderTopColor: "#ffffff", borderLeftColor: "#ffffff", borderRightColor: "#808080", borderBottomColor: "#808080", imageRendering: "pixelated" }}
+              className={buttonStyles.windowControl}
+              style={getWindowBorderStyle()}
             >
               <Maximize2 className="w-3 h-3" />
             </motion.button>
             <motion.button
               whileHover={{ backgroundColor: "#ff1493" }}
-              className="w-5 h-5 bg-[#c0c0c0] border flex items-center justify-center"
-              style={{ borderTopColor: "#ffffff", borderLeftColor: "#ffffff", borderRightColor: "#808080", borderBottomColor: "#808080", imageRendering: "pixelated" }}
+              className={buttonStyles.windowControl}
+              style={getWindowBorderStyle()}
             >
               <X className="w-3 h-3" />
             </motion.button>
@@ -406,12 +278,12 @@ export function RetroPlanner() {
               style={{ overflow: "hidden" }}
             >
               {/* Menu Bar */}
-              <div className="bg-white px-2 py-1 flex gap-3 text-[11px] border-b" style={{ fontFamily: "'Press Start 2P', monospace", borderBottomColor: "#808080", imageRendering: "pixelated" }}>
-                {["File", "Edit", "View", "Image", "Colors", "Help"].map((menu) => (
+              <div className={containerStyles.menuBar} style={{ ...getFontStyle("'Press Start 2P'"), borderBottomColor: "#808080" }}>
+                {menuItems.map((menu) => (
                   <motion.button
                     key={menu}
                     whileHover={{ backgroundColor: "#FFB6C1", color: "#C2185B" }}
-                    className="hover:bg-pink-200 px-1 text-[9px]"
+                    className={buttonStyles.menuItem}
                   >
                     {menu}
                   </motion.button>
@@ -421,21 +293,15 @@ export function RetroPlanner() {
               {/* Main Area with Toolbox */}
               <div className="flex">
                 {/* Toolbox */}
-                <div className="bg-[#f8bbd0] border-r-2 p-1 flex flex-col gap-1" style={{ borderRightColor: "#808080" }}>
+                <div className={containerStyles.toolbox} style={{ borderRightColor: "#808080" }}>
                   {tools.map((tool, i) => (
                     <motion.button
                       key={i}
                       whileHover={{ scale: 1.1, backgroundColor: tool.color }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => tool.label === "Add Task" && setShowEditor(true)}
-                      className="w-10 h-10 bg-white border-2 flex items-center justify-center transition-colors"
-                      style={{ 
-                        borderTopColor: "#ffffff", 
-                        borderLeftColor: "#ffffff", 
-                        borderRightColor: "#808080", 
-                        borderBottomColor: "#808080",
-                        imageRendering: "pixelated"
-                      }}
+                      className={buttonStyles.toolButton}
+                      style={getWindowBorderStyle()}
                       title={tool.label}
                     >
                       <tool.icon className="w-5 h-5 text-gray-700" style={{ imageRendering: "pixelated" }} />
@@ -464,30 +330,24 @@ export function RetroPlanner() {
                 </div>
 
                 {/* Canvas Area */}
-                <div className="flex-1 flex flex-col">
+                <div className={containerStyles.canvas}>
                   {/* Canvas with pink gradient background */}
-                  <div className="bg-white p-2 flex-1 border-2" style={{ borderColor: "#808080" }}>
+                  <div className={containerStyles.canvasArea} style={{ borderColor: "#808080" }}>
                     <div 
                       className="w-full h-full relative"
-                      style={{
-                        background: "linear-gradient(135deg, #FFE4E1 0%, #FFB6C1 25%, #FF69B4 50%, #FF1493 75%, #C2185B 100%)",
-                        imageRendering: "pixelated"
-                      }}
+                      style={getCanvasGradient()}
                     >
                       {/* Pixel Grid Pattern Overlay */}
                       <div 
-                        className="absolute inset-0 opacity-10 pointer-events-none"
-                        style={{
-                          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, #000 3px, #000 4px), repeating-linear-gradient(90deg, transparent, transparent 3px, #000 3px, #000 4px)",
-                          imageRendering: "pixelated"
-                        }}
+                        className={decorationStyles.pixelGrid}
+                        style={getPixelGridPattern()}
                       />
 
                       {/* Floating pixel hearts in canvas */}
                       {[...Array(15)].map((_, i) => (
                         <motion.div
                           key={`canvas-heart-${i}`}
-                          className="absolute pointer-events-none"
+                          className={decorationStyles.canvasHeart}
                           style={{
                             top: `${5 + (i * 6)}%`,
                             left: `${3 + (i * 7)}%`,
@@ -512,7 +372,7 @@ export function RetroPlanner() {
                       {[...Array(10)].map((_, i) => (
                         <motion.div
                           key={`canvas-star-${i}`}
-                          className="absolute pointer-events-none"
+                          className={decorationStyles.canvasStar}
                           style={{
                             top: `${10 + (i * 9)}%`,
                             right: `${5 + (i * 8)}%`,
@@ -535,29 +395,29 @@ export function RetroPlanner() {
                       {/* Content wrapper with padding for decorations */}
                       <div className="relative z-10 p-4 min-h-[400px]">
                         {/* Date Navigator */}
-                        <div className="w-full max-w-lg mx-auto mb-4">
-                          <div className="bg-white border-4 border-[#FF1493] p-3 shadow-[8px_8px_0px_0px_rgba(255,20,147,0.5)]" style={{ imageRendering: "pixelated" }}>
+                        <div className={calendarStyles.dateNavigator}>
+                          <div className={calendarStyles.dateNavigatorBox} style={{ imageRendering: "pixelated" }}>
                             <div className="flex items-center justify-between mb-3">
                               <motion.button
                                 whileHover={{ scale: 1.15, backgroundColor: "#FF69B4" }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={handlePrevPeriod}
-                                className="w-8 h-8 bg-[#FFB6C1] border-2 flex items-center justify-center hover:bg-pink-400 transition-colors"
-                                style={{ borderColor: "#FF1493", imageRendering: "pixelated" }}
+                                className={buttonStyles.navButton}
+                                style={borderStyles.pinkBorder}
                               >
                                 <ChevronLeft className="w-5 h-5 text-white" />
                               </motion.button>
 
                               <div className="text-center">
                                 <p
-                                  className="text-[#C2185B] text-sm md:text-base mb-1"
-                                  style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}
-                                >
+                                  className={textStyles.dateDisplay}
+                                  style={getFontStyle("'Press Start 2P'")}
+                                 >
                                   {viewMode === "week" ? displayDate.full : monthDisplay.full}
                                 </p>
                                 <p
-                                  className="text-[#FF1493] text-[10px]"
-                                  style={{ fontFamily: "'DungGeunMo', monospace" }}
+                                  className={textStyles.dateSubtext}
+                                  style={getFontStyle("'DungGeunMo'")}
                                 >
                                   {viewMode === "week" ? `${displayDate.weekdayKo}요일 • ${displayDate.weekdayEn}` : `${monthDisplay.monthKo} • ${monthDisplay.monthEn}`}
                                 </p>
@@ -567,8 +427,8 @@ export function RetroPlanner() {
                                 whileHover={{ scale: 1.15, backgroundColor: "#FF69B4" }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={handleNextPeriod}
-                                className="w-8 h-8 bg-[#FFB6C1] border-2 flex items-center justify-center hover:bg-pink-400 transition-colors"
-                                style={{ borderColor: "#FF1493", imageRendering: "pixelated" }}
+                                className={buttonStyles.navButton}
+                                style={borderStyles.pinkBorder}
                               >
                                 <ChevronRight className="w-5 h-5 text-white" />
                               </motion.button>
@@ -579,8 +439,8 @@ export function RetroPlanner() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleToday}
-                                className="px-2 py-1.5 bg-[#FFE4E1] border-2 border-[#FF69B4] hover:bg-[#FFB6C1] transition-colors text-[9px]"
-                                style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}
+                                className={buttonStyles.todayButton}
+                                style={getFontStyle("'Press Start 2P'")}
                               >
                                 TODAY
                               </motion.button>
@@ -588,12 +448,8 @@ export function RetroPlanner() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setViewMode("week")}
-                                className={`flex items-center justify-center gap-1 px-2 py-1.5 border-2 transition-colors text-[9px] ${
-                                  viewMode === "week"
-                                    ? "bg-[#FF1493] text-white border-[#C2185B]"
-                                    : "bg-[#FFE4E1] border-[#FF69B4] hover:bg-[#FFB6C1]"
-                                }`}
-                                style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}
+                                className={`${buttonStyles.viewModeButton} ${getViewModeButtonStyle(viewMode === "week")}`}
+                                style={getFontStyle("'Press Start 2P'")}
                               >
                                 <List className="w-3 h-3" />
                                 WEEK
@@ -602,12 +458,8 @@ export function RetroPlanner() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setViewMode("month")}
-                                className={`flex items-center justify-center gap-1 px-2 py-1.5 border-2 transition-colors text-[9px] ${
-                                  viewMode === "month"
-                                    ? "bg-[#FF1493] text-white border-[#C2185B]"
-                                    : "bg-[#FFE4E1] border-[#FF69B4] hover:bg-[#FFB6C1]"
-                                }`}
-                                style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}
+                                className={`${buttonStyles.viewModeButton} ${getViewModeButtonStyle(viewMode === "month")}`}
+                                style={getFontStyle("'Press Start 2P'")}
                               >
                                 <Grid3x3 className="w-3 h-3" />
                                 MONTH
@@ -618,25 +470,19 @@ export function RetroPlanner() {
 
                         {/* Week View */}
                         {viewMode === "week" && (
-                          <div className="grid grid-cols-7 gap-1 mb-4">
+                          <div className={calendarStyles.weekView}>
                             {weekDates.map((day, index) => (
                               <motion.button
                                 key={index}
                                 whileHover={{ scale: 1.1, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleDateChange(day.date)}
-                                className={`p-2 border-3 transition-colors ${
-                                  day.isSelected
-                                    ? "bg-[#FF1493] text-white border-[#C2185B]"
-                                    : day.isToday
-                                    ? "bg-[#FFE4E1] border-[#FF69B4]"
-                                    : "bg-white border-[#FFB6C1] hover:bg-[#FFC0CB]"
-                                }`}
+                                className={`p-2 border-3 transition-colors ${getWeekDayStyle(day)}`}
                                 style={{ imageRendering: "pixelated" }}
                               >
                                 <div
                                   className={`text-[10px] mb-1 ${day.isSelected ? "text-white" : "text-[#C2185B]"}`}
-                                  style={{ fontFamily: "'Press Start 2P', monospace" }}
+                                  style={getFontStyle("'Press Start 2P'")}
                                 >
                                   {day.day}
                                 </div>
@@ -663,21 +509,21 @@ export function RetroPlanner() {
 
                         {/* Month View */}
                         {viewMode === "month" && (
-                          <div className="mb-4">
-                            <div className="grid grid-cols-7 gap-1 mb-1">
-                              {["일", "월", "화", "수", "목", "금", "토"].map((day, i) => (
+                          <div className={calendarStyles.monthView}>
+                            <div className={calendarStyles.monthHeader}>
+                              {weekdays.map((day, i) => (
                                 <div
                                   key={i}
                                   className={`p-1 text-center text-[10px] bg-[#FFB6C1] border-2 border-[#FF1493] ${
                                     i === 0 ? "text-red-600" : i === 6 ? "text-blue-600" : "text-[#C2185B]"
                                   }`}
-                                  style={{ fontFamily: "'DungGeunMo', monospace", imageRendering: "pixelated" }}
+                                  style={{ ...getFontStyle("'DungGeunMo'"), imageRendering: "pixelated" }}
                                 >
                                   {day}
                                 </div>
                               ))}
                             </div>
-                            <div className="grid grid-cols-7 gap-1">
+                            <div className={calendarStyles.monthGrid}>
                               {monthDates.map((day, index) => {
                                 const dayTasks = tasks.filter((t) => t.date === day.dateStr).sort((a, b) => a.time.localeCompare(b.time));
                                 return (
@@ -695,15 +541,7 @@ export function RetroPlanner() {
                                       }}
                                       onMouseEnter={() => day.isCurrentMonth && setHoveredDate(day.dateStr)}
                                       onMouseLeave={() => setHoveredDate(null)}
-                                      className={`w-full aspect-square p-1 border-2 transition-colors relative ${
-                                        day.isSelected && day.isCurrentMonth
-                                          ? "bg-[#FF1493] text-white border-[#C2185B]"
-                                          : day.isToday && day.isCurrentMonth
-                                          ? "bg-[#FFE4E1] border-[#FF69B4]"
-                                          : day.isCurrentMonth
-                                          ? "bg-white border-[#FFB6C1] hover:bg-[#FFC0CB]"
-                                          : "bg-gray-200 border-gray-300 opacity-40"
-                                      }`}
+                                      className={`${calendarStyles.monthDay} ${getMonthDayStyle(day)}`}
                                       style={{ imageRendering: "pixelated" }}
                                       disabled={!day.isCurrentMonth}
                                     >
@@ -720,7 +558,7 @@ export function RetroPlanner() {
                                               ? "text-blue-500"
                                               : "text-[#C2185B]"
                                           }`}
-                                          style={{ fontFamily: "'Press Start 2P', monospace" }}
+                                          style={getFontStyle("'Press Start 2P'")}
                                         >
                                           {day.day}
                                         </div>
@@ -731,16 +569,8 @@ export function RetroPlanner() {
                                             {dayTasks.slice(0, 2).map((task) => (
                                               <div
                                                 key={task.id}
-                                                className={`text-[6px] px-1 py-0.5 truncate border ${
-                                                  task.completed
-                                                    ? "bg-green-100 border-green-400 text-green-700 line-through"
-                                                    : task.priority === "high"
-                                                    ? "bg-red-100 border-red-400 text-red-700"
-                                                    : task.priority === "medium"
-                                                    ? "bg-yellow-100 border-yellow-400 text-yellow-700"
-                                                    : "bg-blue-100 border-blue-400 text-blue-700"
-                                                } ${day.isSelected ? "opacity-90" : ""}`}
-                                                style={{ fontFamily: "'DungGeunMo', monospace", imageRendering: "pixelated" }}
+                                                className={`text-[6px] px-1 py-0.5 truncate border ${getTaskPriorityStyle(task.priority, task.completed)} ${day.isSelected ? "opacity-90" : ""}`}
+                                                style={{ ...getFontStyle("'DungGeunMo'"), imageRendering: "pixelated" }}
                                                 title={task.title}
                                               >
                                                 {task.time} {task.title.length > 8 ? task.title.substring(0, 8) + "..." : task.title}
@@ -751,7 +581,7 @@ export function RetroPlanner() {
                                                 className={`text-[6px] px-1 text-center ${
                                                   day.isSelected ? "text-white" : "text-[#FF1493]"
                                                 }`}
-                                                style={{ fontFamily: "'Press Start 2P', monospace" }}
+                                                style={getFontStyle("'Press Start 2P'")}
                                               >
                                                 +{dayTasks.length - 2}
                                               </div>
@@ -769,10 +599,10 @@ export function RetroPlanner() {
                                           animate={{ opacity: 1, scale: 1, y: 0 }}
                                           exit={{ opacity: 0, scale: 0.9, y: -10 }}
                                           transition={{ duration: 0.2 }}
-                                          className="absolute z-50 left-1/2 -translate-x-1/2 -top-2 transform -translate-y-full bg-white border-4 border-[#FF1493] p-3 shadow-[4px_4px_0px_0px_rgba(255,20,147,0.8)] min-w-[220px] max-w-[250px]"
+                                          className={tooltipStyles.hoverTooltip}
                                           style={{ imageRendering: "pixelated", pointerEvents: "none" }}
                                         >
-                                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                                          <div className={tooltipStyles.tooltipContent}>
                                             {dayTasks.map((task) => (
                                               <div
                                                 key={task.id}
@@ -790,9 +620,9 @@ export function RetroPlanner() {
                                                 <div className="flex-1 min-w-0">
                                                   <p
                                                     className={`text-[10px] ${task.completed ? "line-through text-gray-500" : "text-gray-800"} truncate`}
-                                                    style={{ fontFamily: "'DungGeunMo', monospace" }}
+                                                    style={getFontStyle("'DungGeunMo'")}
                                                   >
-                                                    <span className="text-[#FF1493]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                                                    <span className="text-[#FF1493]" style={getFontStyle("'Press Start 2P'")}>
                                                       {task.time}
                                                     </span>
                                                     {" "}{task.title}
@@ -813,36 +643,36 @@ export function RetroPlanner() {
 
                         {/* Stats - Pink Pixel Style */}
                         <div className="grid grid-cols-3 gap-2 mb-4">
-                          <div className="bg-gradient-to-br from-pink-100 to-pink-200 p-2 border-3 border-pink-400 text-center shadow-[4px_4px_0px_0px_rgba(255,105,180,0.5)]" style={{ imageRendering: "pixelated" }}>
+                          <div className={`${taskStyles.statsCard} from-pink-100 to-pink-200 border-pink-400`} style={{ imageRendering: "pixelated" }}>
                             <div
-                              className="text-pink-600 text-lg mb-0.5"
-                              style={{ fontFamily: "'Press Start 2P', monospace" }}
+                              className={textStyles.statsNumber}
+                              style={getFontStyle("'Press Start 2P'")}
                             >
                               {totalCount}
                             </div>
-                            <div className="text-pink-700 text-[9px]" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+                            <div className={textStyles.statsLabel} style={getFontStyle("'DungGeunMo'")}>
                               전체 • Total
                             </div>
                           </div>
-                          <div className="bg-gradient-to-br from-green-100 to-green-200 p-2 border-3 border-green-400 text-center shadow-[4px_4px_0px_0px_rgba(0,255,127,0.5)]" style={{ imageRendering: "pixelated" }}>
+                          <div className={`${taskStyles.statsCard} from-green-100 to-green-200 border-green-400`} style={{ imageRendering: "pixelated" }}>
                             <div
                               className="text-green-600 text-lg mb-0.5"
-                              style={{ fontFamily: "'Press Start 2P', monospace" }}
+                              style={getFontStyle("'Press Start 2P'")}
                             >
                               {completedCount}
                             </div>
-                            <div className="text-green-700 text-[9px]" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+                            <div className="text-green-700 text-[9px]" style={getFontStyle("'DungGeunMo'")}>
                               완료 • Done
                             </div>
                           </div>
-                          <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 p-2 border-3 border-yellow-400 text-center shadow-[4px_4px_0px_0px_rgba(255,215,0,0.5)]" style={{ imageRendering: "pixelated" }}>
+                          <div className={`${taskStyles.statsCard} from-yellow-100 to-yellow-200 border-yellow-400`} style={{ imageRendering: "pixelated" }}>
                             <div
                               className="text-yellow-600 text-lg mb-0.5"
-                              style={{ fontFamily: "'Press Start 2P', monospace" }}
+                              style={getFontStyle("'Press Start 2P'")}
                             >
                               {totalCount - completedCount}
                             </div>
-                            <div className="text-yellow-700 text-[9px]" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+                            <div className="text-yellow-700 text-[9px]" style={getFontStyle("'DungGeunMo'")}>
                               남음 • Left
                             </div>
                           </div>
@@ -864,17 +694,17 @@ export function RetroPlanner() {
                             <motion.div
                               initial={{ opacity: 0, scale: 0.9 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              className="text-center py-8 border-4 border-dashed border-pink-300 bg-pink-50"
+                              className={taskStyles.emptyState}
                               style={{ imageRendering: "pixelated" }}
                             >
                               <Star className="w-10 h-10 text-pink-400 mx-auto mb-3 fill-pink-200" style={{ imageRendering: "pixelated" }} />
                               <p
-                                className="text-pink-600 text-xs mb-1"
-                                style={{ fontFamily: "'Press Start 2P', monospace" }}
+                                className={textStyles.emptyStateTitle}
+                                style={getFontStyle("'Press Start 2P'")}
                               >
                                 NO TASKS
                               </p>
-                              <p className="text-pink-500 text-[10px]" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+                              <p className={textStyles.emptyStateSubtext} style={getFontStyle("'DungGeunMo'")}>
                                 할 일을 추가해보세요! • Add your first task!
                               </p>
                             </motion.div>
@@ -888,21 +718,21 @@ export function RetroPlanner() {
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={handlePrevPage}
-                              className="w-8 h-8 bg-[#FFB6C1] border-2 flex items-center justify-center hover:bg-[#FFC0CB] transition-colors"
-                              style={{ borderColor: "#FF1493", imageRendering: "pixelated" }}
+                              className={buttonStyles.paginationButton}
+                              style={borderStyles.pinkBorder}
                               disabled={currentPage === 1}
                             >
                               <ChevronLeft className="w-5 h-5 text-white" />
                             </motion.button>
-                            <div className="mx-2 text-pink-600 text-[10px]" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+                            <div className="mx-2 text-pink-600 text-[10px]" style={getFontStyle("'DungGeunMo'")}>
                               {currentPage} / {totalPages}
                             </div>
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={handleNextPage}
-                              className="w-8 h-8 bg-[#FFB6C1] border-2 flex items-center justify-center hover:bg-[#FFC0CB] transition-colors"
-                              style={{ borderColor: "#FF1493", imageRendering: "pixelated" }}
+                              className={buttonStyles.paginationButton}
+                              style={borderStyles.pinkBorder}
                               disabled={currentPage === totalPages}
                             >
                               <ChevronRight className="w-5 h-5 text-white" />
@@ -914,27 +744,24 @@ export function RetroPlanner() {
                         {totalCount > 0 && (
                           <div className="mt-4 pt-3 border-t-3 border-pink-300">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-pink-600 text-[10px]" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+                              <span className={textStyles.progressLabel} style={getFontStyle("'DungGeunMo'")}>
                                 진행률 • Progress
                               </span>
-                              <span className="text-pink-600 text-[10px]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                              <span className={textStyles.progressPercent} style={getFontStyle("'Press Start 2P'")}>
                                 {Math.round((completedCount / totalCount) * 100)}%
                               </span>
                             </div>
-                            <div className="w-full h-6 bg-white border-3 border-pink-400 overflow-hidden shadow-[4px_4px_0px_0px_rgba(255,105,180,0.3)]" style={{ imageRendering: "pixelated" }}>
+                            <div className={taskStyles.progressBar} style={{ imageRendering: "pixelated" }}>
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${(completedCount / totalCount) * 100}%` }}
                                 transition={{ duration: 0.5, type: "spring" }}
-                                className="h-full bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 flex items-center justify-center relative overflow-hidden"
+                                className={taskStyles.progressFill}
                               >
                                 {/* Pixel pattern overlay */}
                                 <div 
-                                  className="absolute inset-0 opacity-30"
-                                  style={{
-                                    backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px)",
-                                    imageRendering: "pixelated"
-                                  }}
+                                  className={taskStyles.progressPattern}
+                                  style={getProgressPattern()}
                                 />
                                 {completedCount > 0 && <Heart className="w-4 h-4 text-white fill-white relative z-10" style={{ imageRendering: "pixelated" }} />}
                               </motion.div>
@@ -951,7 +778,7 @@ export function RetroPlanner() {
         </AnimatePresence>
 
         {/* Color Palette - Pink Themed */}
-        <div className="bg-[#f8bbd0] p-2 border-t-2" style={{ borderTopColor: "#808080" }}>
+        <div className={containerStyles.colorPalette} style={{ borderTopColor: "#808080" }}>
           <div className="grid grid-cols-15 gap-0.5 max-w-xl">
             {paletteColors.map((color, i) => (
               <motion.button
@@ -967,12 +794,12 @@ export function RetroPlanner() {
         </div>
 
         {/* Status Bar - Pixel Style */}
-        <div className="bg-[#f8bbd0] border-t-2 px-2 py-1 flex justify-between items-center text-[9px]" style={{ fontFamily: "'Press Start 2P', monospace", borderTopColor: "#ffffff", imageRendering: "pixelated" }}>
+        <div className={containerStyles.statusBar} style={{ ...getFontStyle("'Press Start 2P'"), borderTopColor: "#ffffff" }}>
           <div className="flex items-center gap-2">
             <Heart className="w-3 h-3 fill-pink-600 text-pink-600" style={{ imageRendering: "pixelated" }} />
-            <span className="text-pink-700">PINK PIXEL PLANNER v1.0</span>
+            <span className={textStyles.statusBarText}>PINK PIXEL PLANNER v1.0</span>
           </div>
-          <div className="flex gap-4 text-pink-700">
+          <div className={`flex gap-4 ${textStyles.statusBarText}`}>
             <span>{displayDate.full}</span>
             <span>{todayTasks.length} TASKS</span>
           </div>

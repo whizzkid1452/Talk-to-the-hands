@@ -4,8 +4,8 @@ import { RetroDiaryEditor } from "./RetroDiaryEditor";
 import { Book, PenTool, Heart, Star, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useBackButton } from "../../contexts/BackButtonContext";
-import { loadDiaries } from "../../diary/loadDiaries";
-import type { DiaryEntry } from "../../diary/utils";
+import { loadDiaries } from "../../../../diary/loadDiaries";
+import type { DiaryEntry } from "../../../../diary/utils";
 
 export function RetroDiaryPage() {
   const [showEditor, setShowEditor] = useState(false);
