@@ -2,8 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { RetroDiaryCard } from "./RetroDiaryCard";
 import { RetroDiaryEditor } from "./RetroDiaryEditor";
 import { Book, PenTool, Heart, Star, Sparkles } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useBackButton } from "../../contexts/BackButtonContext";
+import { useState } from "react";
 import { loadDiaries } from "../../../../diary/loadDiaries";
 import type { DiaryEntry } from "../../../../diary/utils";
 
@@ -42,15 +41,9 @@ export function RetroDiaryPage() {
     setSelectedDiary(diary);
   };
 
-  const { setHasBackButton } = useBackButton();
-
   const handleCloseDetail = () => {
     setSelectedDiary(null);
   };
-
-  useEffect(() => {
-    setHasBackButton(selectedDiary !== null);
-  }, [selectedDiary, setHasBackButton]);
 
   // Detail View
   if (selectedDiary) {

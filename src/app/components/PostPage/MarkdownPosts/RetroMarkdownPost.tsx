@@ -1,6 +1,5 @@
 import { motion } from "motion/react";
-import { useState, useEffect } from "react";
-import { useBackButton } from "../../../contexts/BackButtonContext";
+import { useState } from "react";
 import { BackButton } from "./RetroMarkdownPost.BackButton";
 import { PostHeader } from "./RetroMarkdownPost.Header";
 import { MetaInfo } from "./RetroMarkdownPost.MetaInfo";
@@ -20,15 +19,6 @@ interface Comment {
 }
 
 export function RetroMarkdownPost({ onBack }: RetroMarkdownPostProps) {
-  const { setHasBackButton } = useBackButton();
-
-  useEffect(() => {
-    setHasBackButton(true);
-    return () => {
-      setHasBackButton(false);
-    };
-  }, [setHasBackButton]);
-
   const [likes, setLikes] = useState(42);
   const [isLiked, setIsLiked] = useState(false);
   const [commentText, setCommentText] = useState("");

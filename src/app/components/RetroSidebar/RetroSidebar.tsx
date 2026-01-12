@@ -3,18 +3,16 @@ import { motion, AnimatePresence } from "motion/react";
 import { MobileToggleButton } from "./MobileToggleButton";
 import { SidebarContent } from "./SidebarContent";
 import { MENU_ITEMS } from "./constants";
-import { useBackButton } from "../../contexts/BackButtonContext";
 
 export function RetroSidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { hasBackButton } = useBackButton();
 
   return (
     <>
       <MobileToggleButton 
         isOpen={isOpen} 
         onToggle={() => setIsOpen(!isOpen)}
-        hide={hasBackButton}
+        hide={false}
       />
 
       {/* Desktop Sidebar - Always visible on large screens */}

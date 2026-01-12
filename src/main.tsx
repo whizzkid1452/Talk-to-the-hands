@@ -4,7 +4,13 @@ import App from "./app/App.tsx";
 import "./styles/index.css";
 
 createRoot(document.getElementById("root")!).render(
-  <BrowserRouter basename="">
+  <BrowserRouter 
+    basename=""
+    future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    }}
+  >
     <App />
   </BrowserRouter>
 );

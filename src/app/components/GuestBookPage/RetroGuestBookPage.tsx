@@ -2,8 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { RetroGuestBookCard } from "./RetroGuestBookCard";
 import { RetroGuestBookEditor } from "./RetroGuestBookEditor";
 import { MessageSquare, PenTool, Heart, Star, Sparkles } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useBackButton } from "../../contexts/BackButtonContext";
+import { useState } from "react";
 import { loadGuestBooks } from "../../../../diary/loadDiaries";
 import type { GuestBookEntry } from "../../../../diary/utils";
 
@@ -40,15 +39,9 @@ export function RetroGuestBookPage() {
     setSelectedEntry(entry);
   };
 
-  const { setHasBackButton } = useBackButton();
-
   const handleCloseDetail = () => {
     setSelectedEntry(null);
   };
-
-  useEffect(() => {
-    setHasBackButton(selectedEntry !== null);
-  }, [selectedEntry, setHasBackButton]);
 
   // Detail View
   if (selectedEntry) {

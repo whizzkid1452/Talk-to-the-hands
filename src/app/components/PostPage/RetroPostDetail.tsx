@@ -1,8 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Heart, MessageCircle, Share2, Clock, User, Tag, Eye, Code, Link as LinkIcon, Quote } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { RetroMarkdownRenderer } from "./MarkdownPosts/RetroMarkdownRenderer";
-import { useBackButton } from "../../contexts/BackButtonContext";
 
 interface PostDetailProps {
   title: string;
@@ -33,15 +32,7 @@ export function RetroPostDetail({
   color,
   onBack,
 }: PostDetailProps) {
-  const { setHasBackButton } = useBackButton();
   const [likes, setLikes] = useState(initialLikes);
-
-  useEffect(() => {
-    setHasBackButton(true);
-    return () => {
-      setHasBackButton(false);
-    };
-  }, [setHasBackButton]);
   const [isLiked, setIsLiked] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [commentList, setCommentList] = useState([
