@@ -1,7 +1,7 @@
 
-  # Retro Pixel Art Website
+# Talk to the Hands
 
-  This is a code bundle for Retro Pixel Art Website. The original project is available at https://www.figma.com/design/E2dSBc35AsxfjMZdPEDcUL/Retro-Pixel-Art-Website.
+This is a code bundle for Talk to the Hands. The original project is available at https://www.figma.com/design/E2dSBc35AsxfjMZdPEDcUL/Retro-Pixel-Art-Website.
 
   ## Running the code
 
