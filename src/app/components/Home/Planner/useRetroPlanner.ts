@@ -51,7 +51,7 @@ const initialTasks: Task[] = [
 export function useRetroPlanner() {
   const [showEditor, setShowEditor] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"week" | "month">("week");
+  const [viewMode, setViewMode] = useState<"today" | "week" | "month">("week");
   const [plannerMode, setPlannerMode] = useState<PlannerMode>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -121,7 +121,9 @@ export function useRetroPlanner() {
 
   const handlePrevPeriod = () => {
     const newDate = new Date(selectedDate);
-    if (viewMode === "week") {
+    if (viewMode === "today") {
+      newDate.setDate(newDate.getDate() - 1);
+    } else if (viewMode === "week") {
       newDate.setDate(newDate.getDate() - 7);
     } else {
       newDate.setMonth(newDate.getMonth() - 1);
@@ -131,7 +133,9 @@ export function useRetroPlanner() {
 
   const handleNextPeriod = () => {
     const newDate = new Date(selectedDate);
-    if (viewMode === "week") {
+    if (viewMode === "today") {
+      newDate.setDate(newDate.getDate() + 1);
+    } else if (viewMode === "week") {
       newDate.setDate(newDate.getDate() + 7);
     } else {
       newDate.setMonth(newDate.getMonth() + 1);
