@@ -165,6 +165,7 @@ export function useRetroPlanner() {
     weekDates,
     monthDates,
     monthDisplay,
+    selectedDate,
     handleToday,
     handleSaveTask,
     handleToggleTask,
