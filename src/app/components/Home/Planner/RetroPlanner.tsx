@@ -70,6 +70,7 @@ export function RetroPlanner() {
         <RetroPlannerTitleBar
           isMinimized={isMinimized}
           onToggleMinimize={() => setIsMinimized(!isMinimized)}
+          monthDisplay={monthDisplay}
         />
 
         <AnimatePresence>
@@ -84,6 +85,8 @@ export function RetroPlanner() {
               <RetroPlannerMenuBar 
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
+                displayDate={displayDate}
+                monthDisplay={monthDisplay}
               />
 
               <div className="flex">
