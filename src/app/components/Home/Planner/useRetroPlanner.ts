@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Task, PlannerMode } from "./RetroPlanner.types";
 import { tasksPerPage } from "./RetroPlanner.constants";
 import {
@@ -11,7 +11,7 @@ import {
   getDateRangeForViewMode,
 } from "./RetroPlanner.utils";
 import { useGoogleCalendar } from "../../../hooks/useGoogleCalendar";
-import { deleteCalendarEvent, updateCalendarEvent, createCalendarEvent } from "@/lib/googleCalendar";
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../../../../lib/googleCalendar";
 
 const initialTasks: Task[] = [
   {
@@ -61,6 +61,7 @@ export function useRetroPlanner() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [googleCalendarTasks, setGoogleCalendarTasks] = useState<Task[]>([]);
 
   const { timeMin, timeMax } = getDateRangeForViewMode(selectedDate, viewMode);
   const {
@@ -76,8 +77,9 @@ export function useRetroPlanner() {
     autoLoad: true,
   });
 
-  const googleCalendarTasks = useMemo(() => {
-    return calendarEvents.map(convertGoogleCalendarEventToTask);
+  useEffect(() => {
+    const convertedTasks = calendarEvents.map(convertGoogleCalendarEventToTask);
+    setGoogleCalendarTasks(convertedTasks);
   }, [calendarEvents]);
 
   const allTasks = useMemo(() => {
@@ -119,13 +121,14 @@ export function useRetroPlanner() {
     const endDateTime = new Date(startDateTime);
     endDateTime.setHours(hours + 1, minutes, 0, 0);
 
-    let googleEventId: string | undefined;
+    const categoryShort = taskData.category.split(" ")[0];
+    const priorityNumber = taskData.priority === "high" ? 3 : taskData.priority === "medium" ? 2 : 1;
+    const titleWithMetadata = `${taskData.title} (${categoryShort})(${priorityNumber})`;
 
     if (isAuthenticated) {
       try {
         const createdEvent = await createCalendarEvent({
-          summary: taskData.title,
-          description: taskData.category,
+          summary: titleWithMetadata,
           start: {
             dateTime: startDateTime.toISOString(),
             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -135,8 +138,9 @@ export function useRetroPlanner() {
             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         });
-        googleEventId = createdEvent.id;
         await refreshCalendarEvents();
+        setCurrentPage(1);
+        return;
       } catch (error) {
         console.error("구글 캘린더 이벤트 생성 실패:", error);
         alert("구글 캘린더에 일정 추가에 실패했습니다. 로컬에만 저장됩니다.");
@@ -148,7 +152,6 @@ export function useRetroPlanner() {
       ...taskData,
       completed: false,
       date: taskDate,
-      googleEventId,
     };
     setTasks([...tasks, newTask]);
     setCurrentPage(1);
@@ -159,17 +162,28 @@ export function useRetroPlanner() {
     if (!task) return;
 
     if (task.googleEventId) {
+      const newCompletedState = !task.completed;
+      
+      setGoogleCalendarTasks(googleCalendarTasks.map((task) => 
+        task.id === id ? { ...task, completed: newCompletedState } : task
+      ));
+      
       try {
-        const newTitle = task.completed 
-          ? task.title.replace(/^✓\s*/, '') 
-          : `✓ ${task.title}`;
+        const categoryShort = task.category.split(" ")[0];
+        const priorityNumber = task.priority === "high" ? 3 : task.priority === "medium" ? 2 : 1;
+        const completedMark = newCompletedState ? "(✓)" : "";
+        const newTitle = `${task.title} (${categoryShort})(${priorityNumber})${completedMark}`;
+        
         await updateCalendarEvent(task.googleEventId, {
           summary: newTitle,
         });
         await refreshCalendarEvents();
       } catch (error) {
-        console.error("구글 캘린더 이벤트 완료 처리 실패:", error);
-        alert("구글 캘린더 이벤트 완료 처리에 실패했습니다.");
+        console.error("완료 상태 저장 실패:", error);
+        alert("완료 상태 저장에 실패했습니다.");
+        setGoogleCalendarTasks(googleCalendarTasks.map((task) => 
+          task.id === id ? { ...task, completed: !newCompletedState } : task
+        ));
       }
     } else {
       setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)));

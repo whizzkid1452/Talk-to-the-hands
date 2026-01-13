@@ -1,6 +1,6 @@
 import { Task, WeekDate, MonthDate, DisplayDate, MonthDisplay } from "./RetroPlanner.types";
 import { weekdays, weekdaysEn, monthNames, monthNamesEn } from "./RetroPlanner.constants";
-import type { GoogleCalendarEvent } from "@/lib/googleCalendar";
+import type { GoogleCalendarEvent } from "../../../../lib/googleCalendar";
 
 export function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -144,18 +144,54 @@ function extractDateFromEvent(event: GoogleCalendarEvent): string {
   return formatDate(new Date());
 }
 
+function parseTitleMetadata(summary: string): { title: string; category: string; priority: "high" | "medium" | "low"; completed: boolean } {
+  const metadataPattern = /^(.+?)\s*\(([^)]+)\)\(([123])\)(\(✓\))?$/;
+  const match = summary.match(metadataPattern);
+  
+  if (match) {
+    const [, title, categoryShort, priorityNum, completedMark] = match;
+    const categoryMap: Record<string, string> = {
+      "업무": "업무 Work",
+      "공부": "공부 Study",
+      "개인": "개인 Personal",
+      "운동": "운동 Exercise",
+      "기타": "기타 Other",
+    };
+    const priorityMap: Record<string, "high" | "medium" | "low"> = {
+      "3": "high",
+      "2": "medium",
+      "1": "low",
+    };
+    
+    return {
+      title: title.trim(),
+      category: categoryMap[categoryShort] || categoryShort,
+      priority: priorityMap[priorityNum] || "medium",
+      completed: completedMark === "(✓)",
+    };
+  }
+  
+  return {
+    title: summary,
+    category: "기타 Other",
+    priority: "medium",
+    completed: false,
+  };
+}
+
 export function convertGoogleCalendarEventToTask(event: GoogleCalendarEvent): Task {
   const eventDate = extractDateFromEvent(event);
   const eventTime = extractTimeFromDateTime(event.start.dateTime, event.start.date);
   const eventId = hashStringToNumber(event.id);
+  const { title, category, priority, completed } = parseTitleMetadata(event.summary || "제목 없음");
 
   return {
     id: -eventId,
-    title: event.summary || "제목 없음",
+    title,
     time: eventTime,
-    category: "구글 캘린더",
-    priority: "medium",
-    completed: false,
+    category,
+    priority,
+    completed,
     date: eventDate,
     googleEventId: event.id,
   };
