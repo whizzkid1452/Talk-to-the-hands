@@ -3,8 +3,17 @@ import { supabase } from '@/lib/supabase'
 import {
   signInWithGoogleForCalendar,
   fetchUpcomingCalendarEvents,
+  fetchCalendarEvents,
   type GoogleCalendarEvent,
 } from '@/lib/googleCalendar'
+
+interface UseGoogleCalendarOptions {
+  daysAhead?: number
+  timeMin?: string
+  timeMax?: string
+  maxResults?: number
+  autoLoad?: boolean
+}
 
 interface UseGoogleCalendarReturn {
   calendarEvents: GoogleCalendarEvent[]
@@ -16,7 +25,15 @@ interface UseGoogleCalendarReturn {
   refreshCalendarEvents: () => Promise<void>
 }
 
-export function useGoogleCalendar(): UseGoogleCalendarReturn {
+export function useGoogleCalendar(options: UseGoogleCalendarOptions = {}): UseGoogleCalendarReturn {
+  const {
+    daysAhead = 30,
+    timeMin,
+    timeMax,
+    maxResults = 250,
+    autoLoad = true,
+  } = options
+
   const [calendarEvents, setCalendarEvents] = useState<GoogleCalendarEvent[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -41,8 +58,21 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     setErrorMessage(null)
 
     try {
-      const upcomingEvents = await fetchUpcomingCalendarEvents(30)
-      setCalendarEvents(upcomingEvents)
+      let events: GoogleCalendarEvent[]
+      
+      if (timeMin && timeMax) {
+        const calendarEventsResponse = await fetchCalendarEvents(
+          'primary',
+          timeMin,
+          timeMax,
+          maxResults
+        )
+        events = calendarEventsResponse.items
+      } else {
+        events = await fetchUpcomingCalendarEvents(daysAhead)
+      }
+      
+      setCalendarEvents(events)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '캘린더 데이터를 불러오는 중 오류가 발생했습니다.'
       setErrorMessage(errorMessage)
@@ -50,7 +80,7 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     } finally {
       setIsLoadingEvents(false)
     }
-  }, [checkAuthenticationStatus])
+  }, [checkAuthenticationStatus, daysAhead, timeMin, timeMax, maxResults])
 
   const handleSignIn = useCallback(async () => {
     setErrorMessage(null)
@@ -79,12 +109,16 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
 
   useEffect(() => {
     checkAuthenticationStatus()
-    loadCalendarEvents()
+    if (autoLoad) {
+      loadCalendarEvents()
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         checkAuthenticationStatus().then(() => {
-          loadCalendarEvents()
+          if (autoLoad) {
+            loadCalendarEvents()
+          }
         })
       } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false)
@@ -95,7 +129,13 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     return () => {
       subscription.unsubscribe()
     }
-  }, [checkAuthenticationStatus, loadCalendarEvents])
+  }, [checkAuthenticationStatus, loadCalendarEvents, autoLoad])
+
+  useEffect(() => {
+    if (autoLoad && isAuthenticated) {
+      loadCalendarEvents()
+    }
+  }, [timeMin, timeMax, autoLoad, isAuthenticated, loadCalendarEvents])
 
   return {
     calendarEvents,

@@ -78,7 +78,7 @@ export const taskStyles = {
 } as const;
 
 export const tooltipStyles = {
-  hoverTooltip: "absolute z-50 left-1/2 -translate-x-1/2 -top-2 transform -translate-y-full bg-white border-4 border-[#FF1493] p-3 shadow-[4px_4px_0px_0px_rgba(255,20,147,0.8)] min-w-[220px] max-w-[250px]",
+  hoverTooltip: "fixed z-[9999] bg-white border-4 border-[#FF1493] p-3 shadow-[4px_4px_0px_0px_rgba(255,20,147,0.8)] min-w-[220px] max-w-[250px]",
   tooltipContent: "space-y-2 max-h-48 overflow-y-auto",
 } as const;
 

@@ -1,5 +1,6 @@
 import { Task, WeekDate, MonthDate, DisplayDate, MonthDisplay } from "./RetroPlanner.types";
 import { weekdays, weekdaysEn, monthNames, monthNamesEn } from "./RetroPlanner.constants";
+import type { GoogleCalendarEvent } from "../../../lib/googleCalendar";
 
 export function formatDate(date: Date): string {
   const year = date.getFullYear();
@@ -109,5 +110,96 @@ export function getMonthYearDisplay(selectedDate: Date): MonthDisplay {
     full: `${year}.${String(month).padStart(2, "0")}`,
     monthKo: monthNames[selectedDate.getMonth()],
     monthEn: monthNamesEn[selectedDate.getMonth()],
+  };
+}
+
+function hashStringToNumber(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function extractTimeFromDateTime(dateTime: string | undefined, date: string | undefined): string {
+  if (dateTime) {
+    const dateObj = new Date(dateTime);
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
+  return "00:00";
+}
+
+function extractDateFromEvent(event: GoogleCalendarEvent): string {
+  if (event.start.dateTime) {
+    const dateObj = new Date(event.start.dateTime);
+    return formatDate(dateObj);
+  }
+  if (event.start.date) {
+    return event.start.date;
+  }
+  return formatDate(new Date());
+}
+
+export function convertGoogleCalendarEventToTask(event: GoogleCalendarEvent): Task {
+  const eventDate = extractDateFromEvent(event);
+  const eventTime = extractTimeFromDateTime(event.start.dateTime, event.start.date);
+  const eventId = hashStringToNumber(event.id);
+
+  return {
+    id: -eventId,
+    title: event.summary || "제목 없음",
+    time: eventTime,
+    category: "구글 캘린더",
+    priority: "medium",
+    completed: false,
+    date: eventDate,
+  };
+}
+
+export function getDateRangeForViewMode(selectedDate: Date, viewMode: "today" | "week" | "month"): { timeMin: string; timeMax: string } {
+  const now = new Date(selectedDate);
+  
+  if (viewMode === "today") {
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+    return {
+      timeMin: startOfDay.toISOString(),
+      timeMax: endOfDay.toISOString(),
+    };
+  }
+  
+  if (viewMode === "week") {
+    const dayOfWeek = now.getDay();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    
+    return {
+      timeMin: startOfWeek.toISOString(),
+      timeMax: endOfWeek.toISOString(),
+    };
+  }
+  
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const startOfMonth = new Date(year, month, 1);
+  startOfMonth.setHours(0, 0, 0, 0);
+  
+  const endOfMonth = new Date(year, month + 1, 0);
+  endOfMonth.setHours(23, 59, 59, 999);
+  
+  return {
+    timeMin: startOfMonth.toISOString(),
+    timeMax: endOfMonth.toISOString(),
   };
 }

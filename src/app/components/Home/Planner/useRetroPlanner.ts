@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Task, PlannerMode } from "./RetroPlanner.types";
 import { tasksPerPage } from "./RetroPlanner.constants";
 import {
@@ -7,7 +7,10 @@ import {
   getWeekDates,
   getMonthDates,
   getMonthYearDisplay,
+  convertGoogleCalendarEventToTask,
+  getDateRangeForViewMode,
 } from "./RetroPlanner.utils";
+import { useGoogleCalendar } from "../../../hooks/useGoogleCalendar";
 
 const initialTasks: Task[] = [
   {
@@ -58,8 +61,31 @@ export function useRetroPlanner() {
   const [hoveredDate, setHoveredDate] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
+  const { timeMin, timeMax } = getDateRangeForViewMode(selectedDate, viewMode);
+  const {
+    calendarEvents,
+    isLoadingEvents: isLoadingCalendar,
+    isAuthenticated,
+    errorMessage,
+  } = useGoogleCalendar({
+    timeMin,
+    timeMax,
+    maxResults: 250,
+    autoLoad: true,
+  });
+
+  const googleCalendarTasks = useMemo(() => {
+    return calendarEvents.map(convertGoogleCalendarEventToTask);
+  }, [calendarEvents]);
+
+  const allTasks = useMemo(() => {
+    const googleTaskIds = new Set(googleCalendarTasks.map((task) => task.id));
+    const localTasksWithoutDuplicates = tasks.filter((task) => !googleTaskIds.has(task.id));
+    return [...localTasksWithoutDuplicates, ...googleCalendarTasks];
+  }, [tasks, googleCalendarTasks]);
+
   const selectedDateStr = formatDate(selectedDate);
-  const todayTasks = tasks.filter((task) => task.date === selectedDateStr);
+  const todayTasks = allTasks.filter((task) => task.date === selectedDateStr);
   const sortedTasks = todayTasks.sort((a, b) => a.time.localeCompare(b.time));
   const completedCount = todayTasks.filter((task) => task.completed).length;
   const totalCount = todayTasks.length;
@@ -70,8 +96,8 @@ export function useRetroPlanner() {
   const endIndex = startIndex + tasksPerPage;
   const currentTasks = sortedTasks.slice(startIndex, endIndex);
 
-  const weekDates = getWeekDates(selectedDate, tasks, selectedDateStr);
-  const monthDates = getMonthDates(selectedDate, tasks, selectedDateStr);
+  const weekDates = getWeekDates(selectedDate, allTasks, selectedDateStr);
+  const monthDates = getMonthDates(selectedDate, allTasks, selectedDateStr);
   const monthDisplay = getMonthYearDisplay(selectedDate);
 
   const handleToday = () => {
@@ -155,7 +181,7 @@ export function useRetroPlanner() {
     setIsMinimized,
     hoveredDate,
     setHoveredDate,
-    tasks,
+    tasks: allTasks,
     todayTasks,
     currentTasks,
     completedCount,
@@ -166,6 +192,7 @@ export function useRetroPlanner() {
     monthDates,
     monthDisplay,
     selectedDate,
+    isLoadingCalendar,
     handleToday,
     handleSaveTask,
     handleToggleTask,
