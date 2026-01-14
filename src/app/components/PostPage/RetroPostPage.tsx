@@ -116,7 +116,7 @@ export function RetroPostPage() {
     return (
       <div className="w-full max-w-4xl mx-auto mt-6 md:mt-8 px-4">
         <RetroPostDetail
-          {...posts[selectedPost]}
+          {...allPosts[selectedPost]}
           onBack={handleBackToList}
         />
       </div>
