@@ -61,10 +61,10 @@ export function RetroPostDetail({
     loadComments();
 
     // 실시간 댓글 구독 (다른 사용자의 댓글을 위해)
-    const unsubscribe = subscribeToComments(postId, (newComment) => {
+    const unsubscribe = subscribeToComments(postId, (newComment: Comment) => {
       // 중복 방지: 이미 존재하는 댓글이면 추가하지 않음
-      setCommentList((prev) => {
-        const exists = prev.some(comment => comment.id === newComment.id);
+      setCommentList((prev: Comment[]) => {
+        const exists = prev.some((comment: Comment) => comment.id === newComment.id);
         if (exists) return prev;
         return [...prev, newComment];
       });
@@ -109,7 +109,7 @@ export function RetroPostDetail({
       setIsSubmittingComment(true);
       
       // 즉시 UI에 댓글 추가 (낙관적 업데이트)
-      setCommentList((prev) => [...prev, tempComment]);
+      setCommentList((prev: Comment[]) => [...prev, tempComment]);
       
       // 입력 필드 초기화
       setCommentText("");
@@ -122,8 +122,8 @@ export function RetroPostDetail({
       });
 
       // 임시 댓글을 실제 댓글로 교체
-      setCommentList((prev) =>
-        prev.map((comment) =>
+      setCommentList((prev: Comment[]) =>
+        prev.map((comment: Comment) =>
           comment.id === tempComment.id ? savedComment : comment
         )
       );
@@ -133,8 +133,8 @@ export function RetroPostDetail({
       console.error('댓글 작성 실패:', error);
       
       // 실패 시 임시 댓글 제거
-      setCommentList((prev) =>
-        prev.filter((comment) => comment.id !== tempComment.id)
+      setCommentList((prev: Comment[]) =>
+        prev.filter((comment: Comment) => comment.id !== tempComment.id)
       );
       
       // 실패한 댓글 내용 복원
@@ -225,7 +225,7 @@ export function RetroPostDetail({
               <motion.span
                 key={tag}
                 whileHover={{ scale: 1.1, rotate: 2 }}
-                className="inline-flex items-center gap-1 px-3 py-2 bg-[#f8bbd0] border-2 border-[#ec407a] text-xs md:text-sm"
+                className="inline-flex items-center gap-1 px-3 py-2 bg-[#f8bbd0] border-2 border-[#ec407a] text-sm md:text-base"
                 style={{ fontFamily: "'DungGeunMo', monospace" }}
               >
                 <Tag className="w-3 h-3 md:w-4 md:h-4" />
@@ -362,7 +362,7 @@ export function RetroPostDetail({
               </div>
             </div>
           ) : (
-            commentList.map((comment, i) => (
+            commentList.map((comment: Comment, i: number) => (
               <motion.div
                 key={comment.id}
                 initial={{ opacity: 0, x: -20 }}

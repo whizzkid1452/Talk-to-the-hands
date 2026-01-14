@@ -252,13 +252,13 @@ export function RetroPostPage() {
               </p>
               
               <div className="flex flex-wrap gap-2 mb-3">
-                <span className="px-2 py-1 bg-[#FFB6C1] border-2 border-[#FF1493] text-[10px]" style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}>
+                <span className="px-2 py-1 bg-[#FFB6C1] border-2 border-[#FF1493] text-xs md:text-sm" style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}>
                   web development
                 </span>
-                <span className="px-2 py-1 bg-[#FFE4E1] border-2 border-[#FF1493] text-[10px]" style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}>
+                <span className="px-2 py-1 bg-[#FFE4E1] border-2 border-[#FF1493] text-xs md:text-sm" style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}>
                   markdown
                 </span>
-                <span className="px-2 py-1 bg-[#FFC0CB] border-2 border-[#FF1493] text-[10px]" style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}>
+                <span className="px-2 py-1 bg-[#FFC0CB] border-2 border-[#FF1493] text-xs md:text-sm" style={{ fontFamily: "'Press Start 2P', monospace", imageRendering: "pixelated" }}>
                   tutorial
                 </span>
               </div>

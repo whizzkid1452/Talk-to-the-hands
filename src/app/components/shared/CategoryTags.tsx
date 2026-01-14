@@ -40,11 +40,11 @@ export function CategoryTags({
     ? "px-2 py-1.5"
     : "p-2 md:p-3";
   const tagTextClass = isSidebar
-    ? "text-[9px]"
-    : "text-[10px] md:text-xs";
+    ? "text-[12px]"
+    : "text-sm md:text-base";
   const countTextClass = isSidebar
-    ? "text-[8px] mt-0.5"
-    : "text-[9px] md:text-[10px] mt-0.5";
+    ? "text-[10px]"
+    : "text-[11px] md:text-xs";
   const searchInputClass = isSidebar
     ? "w-full max-w-full pl-7 pr-2 py-1.5 border-2 border-[#ec407a] bg-[#fce4ec] text-[#1a0033] text-[10px]"
     : "w-full pl-10 pr-3 py-2 border-3 border-[#ec407a] bg-[#fce4ec] text-[#1a0033] text-xs md:text-sm";
@@ -100,21 +100,23 @@ export function CategoryTags({
                       : 'bg-gradient-to-br from-[#f8bbd0] to-[#fce4ec] border-[#ec407a]'
                   }`}
                 >
-                  <div
-                    className={`${tagTextClass} ${isSidebar ? 'truncate' : ''} ${
-                      isSelected ? 'text-white' : 'text-[#e91e63]'
-                    }`}
-                    style={{ fontFamily: "'DungGeunMo', monospace" }}
-                  >
-                    {tag}
-                  </div>
-                  <div
-                    className={`${countTextClass} ${
-                      isSelected ? 'text-white/80' : 'text-[#9c27b0]'
-                    }`}
-                    style={{ fontFamily: "'VT323', monospace" }}
-                  >
-                    ({count})
+                  <div className={`flex items-center justify-center gap-1 ${isSidebar ? 'min-w-0' : ''}`}>
+                    <span
+                      className={`${tagTextClass} ${isSidebar ? 'truncate' : ''} ${
+                        isSelected ? 'text-white' : 'text-[#e91e63]'
+                      }`}
+                      style={{ fontFamily: "'DungGeunMo', monospace" }}
+                    >
+                      {tag}
+                    </span>
+                    <span
+                      className={`${countTextClass} flex-shrink-0 ${
+                        isSelected ? 'text-white/80' : 'text-[#9c27b0]'
+                      }`}
+                      style={{ fontFamily: "'VT323', monospace" }}
+                    >
+                      ({count})
+                    </span>
                   </div>
                 </motion.button>
               );

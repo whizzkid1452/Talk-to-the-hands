@@ -97,7 +97,7 @@ export function RetroPostCard({
               <motion.span
                 key={tag}
                 whileHover={{ scale: 1.1 }}
-                className="inline-flex items-center gap-[0.25rem] px-2 md:px-3 py-1 bg-[#f8bbd0] border-2 border-[#ec407a] text-[10px] md:text-xs"
+                className="inline-flex items-center gap-[0.25rem] px-2 md:px-3 py-1 bg-[#f8bbd0] border-2 border-[#ec407a] text-xs md:text-sm"
                 style={{ fontFamily: "'DungGeunMo', monospace" }}
               >
                 <Tag className="w-3 h-3" />

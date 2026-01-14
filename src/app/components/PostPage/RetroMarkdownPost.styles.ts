@@ -19,7 +19,7 @@ export const headerStyles = {
 // 메타 정보 스타일
 export const metaStyles = {
   container: "bg-[#FFE4E1] p-3 md:p-4 border-b-3 border-[#FFB6C1] flex flex-wrap gap-3 md:gap-4 text-xs md:text-sm",
-  tag: "px-2 py-1 bg-[#FFB6C1] border-2 border-[#FF1493] text-[10px]",
+  tag: "px-2 py-1 bg-[#FFB6C1] border-2 border-[#FF1493] text-xs md:text-sm",
 } as const;
 
 // 콘텐츠 스타일
