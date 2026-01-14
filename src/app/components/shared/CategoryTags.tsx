@@ -18,11 +18,19 @@ export function CategoryTags({
   variant = 'page',
 }: CategoryTagsProps) {
   const [tagSearchQuery, setTagSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(4);
 
   // 검색어로 태그 필터링
   const filteredTags = tags.filter((tag) =>
     tag.toLowerCase().includes(tagSearchQuery.toLowerCase())
   );
+
+  // 보여줄 태그 슬라이싱
+  const displayedTags = filteredTags.slice(0, visibleCount);
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev: number) => prev + 4);
+  };
 
   const handleSearchChange = (query: string) => {
     setTagSearchQuery(query);
@@ -79,7 +87,7 @@ export function CategoryTags({
       {filteredTags.length > 0 ? (
         <div className={containerClass}>
           <div className={gridClass}>
-            {filteredTags.map((tag, i) => {
+            {displayedTags.map((tag, i) => {
               const isSelected = selectedTags.includes(tag);
               const count = tagCounts[tag] || 0;
               return (
@@ -122,6 +130,27 @@ export function CategoryTags({
               );
             })}
           </div>
+
+          {/* 더 보기 버튼 */}
+          {visibleCount < filteredTags.length && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 flex justify-center"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLoadMore}
+                className={`flex items-center gap-2 px-4 py-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
+                  isSidebar ? 'text-[10px] px-3 py-1.5' : 'text-xs md:text-sm'
+                } bg-white text-[#e91e63]`}
+                style={{ fontFamily: "'DungGeunMo', monospace" }}
+              >
+                더 보기 • Load More
+              </motion.button>
+            </motion.div>
+          )}
         </div>
       ) : (
         <div
