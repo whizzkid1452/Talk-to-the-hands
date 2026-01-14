@@ -240,3 +240,25 @@ export function getDateRangeForViewMode(selectedDate: Date, viewMode: "today" | 
     timeMax: endOfMonth.toISOString(),
   };
 }
+
+const PRIORITY_ORDER = { high: 3, medium: 2, low: 1 } as const;
+
+export function sortTasksByPriorityAndTime(tasks: Task[]): Task[] {
+  return [...tasks].sort((a, b) => {
+    if (a.completed !== b.completed) {
+      return a.completed ? 1 : -1;
+    }
+    if (a.priority !== b.priority) {
+      return PRIORITY_ORDER[b.priority] - PRIORITY_ORDER[a.priority];
+    }
+    return a.time.localeCompare(b.time);
+  });
+}
+
+export function getPriorityNumber(priority: "high" | "medium" | "low"): number {
+  return PRIORITY_ORDER[priority];
+}
+
+export function getCategoryShortName(category: string): string {
+  return category.split(" ")[0];
+}

@@ -9,6 +9,9 @@ import {
   getMonthYearDisplay,
   convertGoogleCalendarEventToTask,
   getDateRangeForViewMode,
+  sortTasksByPriorityAndTime,
+  getPriorityNumber,
+  getCategoryShortName,
 } from "./RetroPlanner.utils";
 import { useGoogleCalendar } from "../../../hooks/useGoogleCalendar";
 import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../../../../lib/googleCalendar";
@@ -91,16 +94,7 @@ export function useRetroPlanner() {
   const selectedDateStr = formatDate(selectedDate);
   const todayTasks = allTasks.filter((task) => task.date === selectedDateStr);
   
-  const priorityOrder = { high: 3, medium: 2, low: 1 };
-  const sortedTasks = todayTasks.sort((a, b) => {
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1;
-    }
-    if (a.priority !== b.priority) {
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    }
-    return a.time.localeCompare(b.time);
-  });
+  const sortedTasks = sortTasksByPriorityAndTime(todayTasks);
   
   const completedCount = todayTasks.filter((task) => task.completed).length;
   const totalCount = todayTasks.length;
@@ -132,8 +126,8 @@ export function useRetroPlanner() {
     const endDateTime = new Date(startDateTime);
     endDateTime.setHours(hours + 1, minutes, 0, 0);
 
-    const categoryShort = taskData.category.split(" ")[0];
-    const priorityNumber = taskData.priority === "high" ? 3 : taskData.priority === "medium" ? 2 : 1;
+    const categoryShort = getCategoryShortName(taskData.category);
+    const priorityNumber = getPriorityNumber(taskData.priority);
     const titleWithMetadata = `${taskData.title} (${categoryShort})(${priorityNumber})`;
 
     if (isAuthenticated) {
@@ -180,8 +174,8 @@ export function useRetroPlanner() {
       ));
       
       try {
-        const categoryShort = task.category.split(" ")[0];
-        const priorityNumber = task.priority === "high" ? 3 : task.priority === "medium" ? 2 : 1;
+        const categoryShort = getCategoryShortName(task.category);
+        const priorityNumber = getPriorityNumber(task.priority);
         const completedMark = newCompletedState ? "(✓)" : "";
         const newTitle = `${task.title} (${categoryShort})(${priorityNumber})${completedMark}`;
         

@@ -4,6 +4,7 @@ import { CheckCircle2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { calendarStyles, tooltipStyles, getMonthDayStyle, getTaskPriorityStyle, getFontStyle } from "./RetroPlanner.styles";
 import { weekdays } from "./RetroPlanner.constants";
+import { sortTasksByPriorityAndTime } from "./RetroPlanner.utils";
 import type { MonthDate, Task } from "./RetroPlanner.types";
 
 interface RetroPlannerMonthViewProps {
@@ -41,16 +42,8 @@ const HoverTooltip = memo(({
     });
   }, [hoveredDate, hoveredDayRef]);
 
-  const priorityOrder = { high: 3, medium: 2, low: 1 };
-  const dayTasks = tasks.filter((t) => t.date === hoveredDate).sort((a, b) => {
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1;
-    }
-    if (a.priority !== b.priority) {
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    }
-    return a.time.localeCompare(b.time);
-  });
+  const filteredTasks = tasks.filter((t) => t.date === hoveredDate);
+  const dayTasks = sortTasksByPriorityAndTime(filteredTasks);
 
   if (dayTasks.length === 0) return null;
 
@@ -124,16 +117,8 @@ const MonthDayCell = memo(({
   onHoverDate: (dateStr: string | null) => void;
   hoveredDayRef: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
 }) => {
-  const priorityOrder = { high: 3, medium: 2, low: 1 };
-  const dayTasks = tasks.filter((t) => t.date === day.dateStr).sort((a, b) => {
-    if (a.completed !== b.completed) {
-      return a.completed ? 1 : -1;
-    }
-    if (a.priority !== b.priority) {
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    }
-    return a.time.localeCompare(b.time);
-  });
+  const filteredTasks = tasks.filter((t) => t.date === day.dateStr);
+  const dayTasks = sortTasksByPriorityAndTime(filteredTasks);
 
   return (
     <div 
