@@ -6,7 +6,7 @@ import { CategoryTags } from "../shared/CategoryTags";
 
 export function SidebarCategories() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { selectedTag, usedTags, tagCounts, handleTagClick } = useTagFilter();
+  const { selectedTags, usedTags, tagCounts, handleTagClick } = useTagFilter();
 
   // 토글 핸들러
   const handleToggle = () => {
@@ -54,7 +54,7 @@ export function SidebarCategories() {
                 <CategoryTags
                   tags={usedTags}
                   tagCounts={tagCounts}
-                  selectedTag={selectedTag}
+                  selectedTags={selectedTags}
                   onTagClick={handleTagClick}
                   variant="sidebar"
                 />

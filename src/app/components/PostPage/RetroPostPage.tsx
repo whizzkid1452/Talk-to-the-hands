@@ -18,14 +18,14 @@ export function RetroPostPage() {
   const navigate = useNavigate();
 
   // 태그 필터 훅 사용 (이 훅은 이미 useLocation을 사용하도록 수정됨)
-  const { selectedTag, usedTags, tagCounts, handleTagClick, clearTagFilter } = useTagFilter();
+  const { selectedTags, usedTags, tagCounts, handleTagClick, clearTagFilter } = useTagFilter();
 
   // 마크다운 파일에서 posts 로드
   const allPosts: Post[] = loadPosts();
 
-  // 선택된 태그로 필터링된 포스트
-  const posts: Post[] = selectedTag
-    ? allPosts.filter((post) => post.tags.includes(selectedTag))
+  // 선택된 태그로 필터링된 포스트 (모든 태그가 포함되어야 함 - AND 로직)
+  const posts: Post[] = selectedTags.length > 0
+    ? allPosts.filter((post) => selectedTags.every(tag => post.tags.includes(tag)))
     : allPosts;
 
   // 포스트 제목을 URL 친화적인 slug로 변환
@@ -161,7 +161,7 @@ export function RetroPostPage() {
       </motion.div>
 
       {/* Selected Tag Filter Badge */}
-      {selectedTag && (
+      {selectedTags.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -172,7 +172,7 @@ export function RetroPostPage() {
               className="text-white text-xs md:text-sm flex-1"
               style={{ fontFamily: "'DungGeunMo', monospace" }}
             >
-              필터: {selectedTag} ({posts.length}개 포스트)
+              필터: {selectedTags.join(", ")} ({posts.length}개 포스트)
             </span>
             <motion.button
               onClick={clearTagFilter}
@@ -360,7 +360,7 @@ export function RetroPostPage() {
         <CategoryTags
           tags={usedTags}
           tagCounts={tagCounts}
-          selectedTag={selectedTag}
+          selectedTags={selectedTags}
           onTagClick={handleTagClick}
           variant="page"
         />

@@ -5,7 +5,7 @@ export function useTagFilter() {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const selectedTag = searchParams.get("tag");
+  const selectedTags = searchParams.getAll("tag");
 
   // posts에서 실제 사용된 태그들 추출 및 개수 계산
   const posts = loadPosts();
@@ -18,20 +18,34 @@ export function useTagFilter() {
 
   const usedTags = Object.keys(tagCounts).sort();
 
-  // 태그 클릭 핸들러
+  // 태그 클릭 핸들러 (토글 방식)
   const handleTagClick = (tag: string) => {
-    // 항상 /post 페이지로 이동하며 태그 쿼리 파라미터 전달
-    navigate(`/post?tag=${encodeURIComponent(tag)}`);
+    const currentTags = new Set(searchParams.getAll("tag"));
+    
+    if (currentTags.has(tag)) {
+      currentTags.delete(tag);
+    } else {
+      currentTags.add(tag);
+    }
+
+    // 기존 쿼리 파라미터 유지하면서 tag만 업데이트
+    // URLSearchParams를 새로 구성하여 tag 파라미터를 재설정
+    const newParams = new URLSearchParams(location.search);
+    newParams.delete("tag");
+    currentTags.forEach(t => newParams.append("tag", t));
+
+    navigate(`/post?${newParams.toString()}`);
   };
 
   // 태그 필터 제거 핸들러
   const clearTagFilter = () => {
-    // 필터 제거 시에도 /post 페이지에 머물거나 이동
-    navigate("/post");
+    const newParams = new URLSearchParams(location.search);
+    newParams.delete("tag");
+    navigate(`/post?${newParams.toString()}`);
   };
 
   return {
-    selectedTag,
+    selectedTags,
     usedTags,
     tagCounts,
     handleTagClick,

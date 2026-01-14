@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 interface CategoryTagsProps {
   tags: string[];
   tagCounts: Record<string, number>;
-  selectedTag: string | null;
+  selectedTags: string[];
   onTagClick: (tag: string) => void;
   variant?: 'sidebar' | 'page';
 }
@@ -13,7 +13,7 @@ interface CategoryTagsProps {
 export function CategoryTags({
   tags,
   tagCounts,
-  selectedTag,
+  selectedTags,
   onTagClick,
   variant = 'page',
 }: CategoryTagsProps) {
@@ -80,7 +80,7 @@ export function CategoryTags({
         <div className={containerClass}>
           <div className={gridClass}>
             {filteredTags.map((tag, i) => {
-              const isSelected = selectedTag === tag;
+              const isSelected = selectedTags.includes(tag);
               const count = tagCounts[tag] || 0;
               return (
                 <motion.button
