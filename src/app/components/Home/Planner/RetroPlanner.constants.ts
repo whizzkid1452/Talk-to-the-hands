@@ -26,6 +26,24 @@ export const tools: Tool[] = [
 
 export const tasksPerPage = 4;
 
+export const MAX_MONTH_VIEW_TASKS = 4;
+
+export const MAX_TASK_TITLE_LENGTH_IN_MONTH = 10;
+
+export const DAYS_IN_WEEK = 7;
+
+export const CALENDAR_GRID_TOTAL_CELLS = 42;
+
+export const LAST_DAY_OF_WEEK_INDEX = 6;
+
+export const categoryColors: Record<string, string> = {
+  "업무 Work": "bg-[#e91e63]",
+  "공부 Study": "bg-[#9c27b0]",
+  "개인 Personal": "bg-[#00bcd4]",
+  "운동 Exercise": "bg-[#4caf50]",
+  "기타 Other": "bg-[#ff9800]",
+} as const;
+
 export const weekdays = ["일", "월", "화", "수", "목", "금", "토"] as const;
 export const weekdaysEn = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
 

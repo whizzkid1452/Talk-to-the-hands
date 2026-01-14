@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import { Check, Trash2, Star, Circle } from "lucide-react";
+import { categoryColors } from "./RetroPlanner.constants";
 
 interface PlannerTaskProps {
   id: number;
@@ -28,14 +29,6 @@ export function RetroPlannerTask({
     high: { bg: "from-red-400 to-red-500", border: "border-red-600", text: "text-red-600" },
     medium: { bg: "from-orange-400 to-orange-500", border: "border-orange-600", text: "text-orange-600" },
     low: { bg: "from-green-400 to-green-500", border: "border-green-600", text: "text-green-600" },
-  };
-
-  const categoryColors: Record<string, string> = {
-    "업무 Work": "bg-[#e91e63]",
-    "공부 Study": "bg-[#9c27b0]",
-    "개인 Personal": "bg-[#00bcd4]",
-    "운동 Exercise": "bg-[#4caf50]",
-    "기타 Other": "bg-[#ff9800]",
   };
 
   const handleDelete = (e: React.MouseEvent) => {

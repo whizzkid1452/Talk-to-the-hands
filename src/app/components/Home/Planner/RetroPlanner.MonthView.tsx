@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { calendarStyles, tooltipStyles, getMonthDayStyle, getTaskPriorityStyle, getFontStyle } from "./RetroPlanner.styles";
-import { weekdays } from "./RetroPlanner.constants";
+import { weekdays, MAX_MONTH_VIEW_TASKS, MAX_TASK_TITLE_LENGTH_IN_MONTH } from "./RetroPlanner.constants";
 import { sortTasksByPriorityAndTime } from "./RetroPlanner.utils";
 import type { MonthDate, Task } from "./RetroPlanner.types";
 
@@ -162,7 +162,7 @@ const MonthDayCell = memo(({
           </div>
           {day.isCurrentMonth && dayTasks.length > 0 && (
             <div className="w-full space-y-0.5 mt-1">
-              {dayTasks.slice(0, 4).map((task) => (
+              {dayTasks.slice(0, MAX_MONTH_VIEW_TASKS).map((task) => (
                 <div
                   key={task.id}
                   className={`text-[8px] px-1 py-0.5 truncate border ${getTaskPriorityStyle(task.priority, task.completed)} ${day.isSelected ? "opacity-90" : ""}`}
@@ -170,18 +170,18 @@ const MonthDayCell = memo(({
                   title={task.title}
                 >
                   <span className="truncate">
-                    {task.time} {task.title.length > 10 ? task.title.substring(0, 10) + "..." : task.title}
+                    {task.time} {task.title.length > MAX_TASK_TITLE_LENGTH_IN_MONTH ? task.title.substring(0, MAX_TASK_TITLE_LENGTH_IN_MONTH) + "..." : task.title}
                   </span>
                 </div>
               ))}
-              {dayTasks.length > 4 && (
+              {dayTasks.length > MAX_MONTH_VIEW_TASKS && (
                 <div
                   className={`text-[8px] px-1 text-center ${
                     day.isSelected ? "text-white" : "text-[#FF1493]"
                   }`}
                   style={getFontStyle("'Press Start 2P'")}
                 >
-                  +{dayTasks.length - 4}
+                  +{dayTasks.length - MAX_MONTH_VIEW_TASKS}
                 </div>
               )}
             </div>

@@ -1,5 +1,5 @@
 import { Task, WeekDate, MonthDate, DisplayDate, MonthDisplay } from "./RetroPlanner.types";
-import { weekdays, weekdaysEn, monthNames, monthNamesEn } from "./RetroPlanner.constants";
+import { weekdays, weekdaysEn, monthNames, monthNamesEn, DAYS_IN_WEEK, CALENDAR_GRID_TOTAL_CELLS, LAST_DAY_OF_WEEK_INDEX } from "./RetroPlanner.constants";
 import type { GoogleCalendarEvent } from "../../../../lib/googleCalendar";
 
 export function formatDate(date: Date): string {
@@ -29,7 +29,7 @@ export function getWeekDates(selectedDate: Date, tasks: Task[], selectedDateStr:
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - dayOfWeek);
 
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < DAYS_IN_WEEK; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
     const dateStr = formatDate(date);
@@ -86,7 +86,7 @@ export function getMonthDates(selectedDate: Date, tasks: Task[], selectedDateStr
     });
   }
 
-  const remainingDays = 42 - dates.length;
+  const remainingDays = CALENDAR_GRID_TOTAL_CELLS - dates.length;
   for (let day = 1; day <= remainingDays; day++) {
     const date = new Date(year, month + 1, day);
     dates.push({
@@ -218,7 +218,7 @@ export function getDateRangeForViewMode(selectedDate: Date, viewMode: "today" | 
     startOfWeek.setHours(0, 0, 0, 0);
     
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setDate(startOfWeek.getDate() + LAST_DAY_OF_WEEK_INDEX);
     endOfWeek.setHours(23, 59, 59, 999);
     
     return {

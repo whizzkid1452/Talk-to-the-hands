@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import type { Task, PlannerMode } from "./RetroPlanner.types";
-import { tasksPerPage } from "./RetroPlanner.constants";
+import { tasksPerPage, DAYS_IN_WEEK } from "./RetroPlanner.constants";
 import {
   formatDate,
   formatDisplayDate,
@@ -237,7 +237,7 @@ export function useRetroPlanner() {
     if (viewMode === "today") {
       newDate.setDate(newDate.getDate() - 1);
     } else if (viewMode === "week") {
-      newDate.setDate(newDate.getDate() - 7);
+      newDate.setDate(newDate.getDate() - DAYS_IN_WEEK);
     } else {
       newDate.setMonth(newDate.getMonth() - 1);
     }
@@ -249,7 +249,7 @@ export function useRetroPlanner() {
     if (viewMode === "today") {
       newDate.setDate(newDate.getDate() + 1);
     } else if (viewMode === "week") {
-      newDate.setDate(newDate.getDate() + 7);
+      newDate.setDate(newDate.getDate() + DAYS_IN_WEEK);
     } else {
       newDate.setMonth(newDate.getMonth() + 1);
     }
