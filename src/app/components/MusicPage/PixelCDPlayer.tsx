@@ -11,6 +11,7 @@ export function PixelCDPlayer() {
 
   useEffect(() => {
     if (audioRef.current) {
+      audioRef.current.volume = 0.3;
       audioRef.current.play().then(() => {
         setIsPlaying(true);
       }).catch(() => {
@@ -58,6 +59,9 @@ export function PixelCDPlayer() {
               : {}
           }
           whileHover={{ scale: 1.05 }}
+          style={{
+            filter: `drop-shadow(0 0 ${isPlaying ? 20 : 12}px rgba(255, 105, 180, ${isPlaying ? 0.8 : 0.5}))`
+          }}
         >
           <img 
             src={cdImage} 

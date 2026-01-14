@@ -6,6 +6,7 @@ import { NotFoundPage } from "./components/NotFoundPage/NotFoundPage";
 import { useCustomCursor } from "./hooks/useCustomCursor";
 import { DefaultLayout } from "./components/layouts/DefaultLayout";
 import { RetroSidebar } from "./components/RetroSidebar/index";
+import { PixelCDPlayer } from "./components/MusicPage/PixelCDPlayer";
 
 // 모든 페이지를 lazy loading으로 로드
 const PostPage = lazy(() => import("./components/PostPage/PostPage").then(module => ({ default: module.PostPage })));
@@ -19,6 +20,7 @@ const GuestBookPage = lazy(() => import("./components/GuestBookPage/GuestBookPag
  * 
  * 모든 페이지에 공통적으로 적용되는 요소:
  * - RetroSidebar: 사이드바 네비게이션 (React Router로 관리)
+ * - PixelCDPlayer: 음악 플레이어 (우측 상단 고정)
  * - DefaultLayout: 배경, 커서 효과, 레이아웃 구조
  * 
  * React Router를 사용하여 URL 기반 라우팅을 구현합니다.
@@ -31,6 +33,9 @@ export default function App() {
     <>
       {/* RetroSidebar - 모든 페이지에 공통으로 적용되는 사이드바 */}
       <RetroSidebar />
+      
+      {/* PixelCDPlayer - 모든 페이지에 공통으로 적용되는 음악 플레이어 */}
+      <PixelCDPlayer />
       
       {/* DefaultLayout - 모든 페이지에 공통 레이아웃 */}
       <DefaultLayout>
