@@ -3,7 +3,7 @@ import { RetroPostCard } from "./RetroPostCard";
 import { RetroPostDetail } from "./RetroPostDetail";
 import { RetroMarkdownPost } from "./MarkdownPosts/RetroMarkdownPost";
 import { PenTool, Star, Sparkles, Search, ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadPosts } from "../../../../posts/loadPosts";
 import type { Post } from "../../../../posts/utils";
 
@@ -15,6 +15,82 @@ export function RetroPostPage() {
 
   // 마크다운 파일에서 posts 로드
   const posts: Post[] = loadPosts();
+
+  // URL에서 포스트 ID 읽기 및 초기화
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('post');
+    const isMarkdown = params.get('view') === 'markdown';
+
+    if (isMarkdown) {
+      setShowMarkdownPost(true);
+    } else if (postId) {
+      // 포스트 제목으로 인덱스 찾기
+      const postIndex = posts.findIndex(
+        (post) => createPostSlug(post.title) === postId
+      );
+      if (postIndex !== -1) {
+        setSelectedPost(postIndex);
+      }
+    }
+  }, [posts]);
+
+  // 브라우저 뒤로가기/앞으로가기 처리
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const postId = params.get('post');
+      const isMarkdown = params.get('view') === 'markdown';
+
+      if (isMarkdown) {
+        setShowMarkdownPost(true);
+        setSelectedPost(null);
+      } else if (postId) {
+        const postIndex = posts.findIndex(
+          (post) => createPostSlug(post.title) === postId
+        );
+        setSelectedPost(postIndex !== -1 ? postIndex : null);
+        setShowMarkdownPost(false);
+      } else {
+        setSelectedPost(null);
+        setShowMarkdownPost(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [posts]);
+
+  // 포스트 제목을 URL 친화적인 slug로 변환
+  const createPostSlug = (title: string): string => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9가-힣]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  // 포스트 선택 핸들러 (URL 업데이트 포함)
+  const handleSelectPost = (index: number) => {
+    const post = posts[index];
+    const slug = createPostSlug(post.title);
+    const newUrl = `${window.location.pathname}?post=${slug}`;
+    window.history.pushState({ postIndex: index }, '', newUrl);
+    setSelectedPost(index);
+  };
+
+  // 마크다운 포스트 표시 핸들러
+  const handleShowMarkdownPost = () => {
+    const newUrl = `${window.location.pathname}?view=markdown`;
+    window.history.pushState({ markdown: true }, '', newUrl);
+    setShowMarkdownPost(true);
+  };
+
+  // 목록으로 돌아가기 핸들러
+  const handleBackToList = () => {
+    window.history.pushState({}, '', window.location.pathname);
+    setSelectedPost(null);
+    setShowMarkdownPost(false);
+  };
 
   // posts에서 실제 사용된 태그들 추출 (중복 제거)
   const usedTags = Array.from(
@@ -51,7 +127,7 @@ export function RetroPostPage() {
   if (showMarkdownPost) {
     return (
       <div className="w-full max-w-5xl mx-auto mt-6 md:mt-8 px-4">
-        <RetroMarkdownPost onBack={() => setShowMarkdownPost(false)} />
+        <RetroMarkdownPost onBack={handleBackToList} />
       </div>
     );
   }
@@ -62,7 +138,7 @@ export function RetroPostPage() {
       <div className="w-full max-w-4xl mx-auto mt-6 md:mt-8 px-4">
         <RetroPostDetail
           {...posts[selectedPost]}
-          onBack={() => setSelectedPost(null)}
+          onBack={handleBackToList}
         />
       </div>
     );
@@ -135,7 +211,7 @@ export function RetroPostPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           whileHover={{ scale: 1.02, y: -5 }}
-          onClick={() => setShowMarkdownPost(true)}
+          onClick={handleShowMarkdownPost}
           className="mb-6 cursor-pointer"
         >
           <div className="bg-gradient-to-br from-[#FFE4E1] via-white to-[#FFB6C1] border-4 border-[#FF1493] shadow-[8px_8px_0px_0px_rgba(255,20,147,0.5)] overflow-hidden" style={{ imageRendering: "pixelated" }}>
@@ -197,7 +273,7 @@ export function RetroPostPage() {
             key={index}
             {...post}
             delay={0.5 + index * 0.15}
-            onClick={() => setSelectedPost(index)}
+            onClick={() => handleSelectPost(index)}
           />
         ))}
       </div>

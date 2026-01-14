@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Heart, MessageCircle, Share2, Clock, User, Tag, Eye, Code, Link as LinkIcon, Quote } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RetroMarkdownRenderer } from "./MarkdownPosts/RetroMarkdownRenderer";
+import { fetchCommentsByPostId, createComment, subscribeToComments, type Comment } from "../../../lib/comments";
 
 interface PostDetailProps {
   title: string;
@@ -35,18 +36,44 @@ export function RetroPostDetail({
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [commentList, setCommentList] = useState([
-    {
-      author: "RetroFan99",
-      text: "정말 유익한 글이네요! This is so helpful!",
-      date: "2024-12-26 14:30",
-    },
-    {
-      author: "PixelLover",
-      text: "저도 픽셀 아트 시작해보고 싶어요 ㅠㅠ",
-      date: "2024-12-26 15:20",
-    },
-  ]);
+  const [authorName, setAuthorName] = useState("");
+  const [commentList, setCommentList] = useState<Comment[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  // 포스트 ID 생성 (title을 slug로 변환)
+  const postId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  // 댓글 불러오기
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        setIsLoadingComments(true);
+        const comments = await fetchCommentsByPostId(postId);
+        setCommentList(comments);
+      } catch (error) {
+        console.error('댓글 로딩 실패:', error);
+      } finally {
+        setIsLoadingComments(false);
+      }
+    };
+
+    loadComments();
+
+    // 실시간 댓글 구독 (다른 사용자의 댓글을 위해)
+    const unsubscribe = subscribeToComments(postId, (newComment) => {
+      // 중복 방지: 이미 존재하는 댓글이면 추가하지 않음
+      setCommentList((prev) => {
+        const exists = prev.some(comment => comment.id === newComment.id);
+        if (exists) return prev;
+        return [...prev, newComment];
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [postId]);
 
   const handleLike = () => {
     if (isLiked) {
@@ -57,17 +84,65 @@ export function RetroPostDetail({
     setIsLiked(!isLiked);
   };
 
-  const handleCommentSubmit = () => {
-    if (commentText.trim()) {
-      setCommentList([
-        ...commentList,
-        {
-          author: "Guest User",
-          text: commentText,
-          date: new Date().toLocaleString("ko-KR"),
-        },
-      ]);
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim()) {
+      alert('댓글 내용을 입력해주세요!');
+      return;
+    }
+
+    if (!authorName.trim()) {
+      alert('작성자 이름을 입력해주세요!');
+      return;
+    }
+
+    // 낙관적 업데이트를 위한 임시 댓글 객체 생성
+    const tempComment: Comment = {
+      id: `temp-${Date.now()}`, // 임시 ID
+      post_id: postId,
+      author_name: authorName.trim(),
+      comment_text: commentText.trim(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      setIsSubmittingComment(true);
+      
+      // 즉시 UI에 댓글 추가 (낙관적 업데이트)
+      setCommentList((prev) => [...prev, tempComment]);
+      
+      // 입력 필드 초기화
       setCommentText("");
+      
+      // 실제 데이터베이스에 저장
+      const savedComment = await createComment({
+        post_id: postId,
+        author_name: authorName.trim(),
+        comment_text: commentText.trim(),
+      });
+
+      // 임시 댓글을 실제 댓글로 교체
+      setCommentList((prev) =>
+        prev.map((comment) =>
+          comment.id === tempComment.id ? savedComment : comment
+        )
+      );
+      
+      // 작성자 이름은 유지 (같은 사람이 여러 댓글 작성 가능)
+    } catch (error) {
+      console.error('댓글 작성 실패:', error);
+      
+      // 실패 시 임시 댓글 제거
+      setCommentList((prev) =>
+        prev.filter((comment) => comment.id !== tempComment.id)
+      );
+      
+      // 실패한 댓글 내용 복원
+      setCommentText(commentText);
+      
+      alert('댓글 작성에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmittingComment(false);
     }
   };
 
@@ -233,6 +308,15 @@ export function RetroPostDetail({
 
         {/* Comment Input */}
         <div className="p-4 md:p-6 border-b-4 border-[#fce4ec]">
+          <input
+            type="text"
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            placeholder="작성자 이름 • Your name..."
+            className="w-full p-3 md:p-4 border-4 border-[#ec407a] bg-[#fce4ec] text-[#1a0033] text-xs md:text-sm mb-3"
+            style={{ fontFamily: "'DungGeunMo', monospace" }}
+            maxLength={30}
+          />
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
@@ -245,56 +329,83 @@ export function RetroPostDetail({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleCommentSubmit}
-            className="px-4 md:px-6 py-2 bg-gradient-to-r from-[#e91e63] to-[#f06292] text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            disabled={isSubmittingComment}
+            className="px-4 md:px-6 py-2 bg-gradient-to-r from-[#e91e63] to-[#f06292] text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span
               className="text-xs md:text-sm"
               style={{ fontFamily: "'DungGeunMo', monospace" }}
             >
-              댓글 작성 • Post Comment
+              {isSubmittingComment ? '작성 중... • Posting...' : '댓글 작성 • Post Comment'}
             </span>
           </motion.button>
         </div>
 
         {/* Comment List */}
         <div className="divide-y-2 divide-[#fce4ec]">
-          {commentList.map((comment, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 + i * 0.1 }}
-              className="p-4 md:p-6 hover:bg-[#fce4ec]/30 transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#e91e63] to-[#9c27b0] border-2 border-black flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span
-                      className="text-[#e91e63] text-xs md:text-sm"
+          {isLoadingComments ? (
+            <div className="p-8 text-center">
+              <div
+                className="text-[#9c27b0] text-xs md:text-sm"
+                style={{ fontFamily: "'DungGeunMo', monospace" }}
+              >
+                댓글 불러오는 중... • Loading comments...
+              </div>
+            </div>
+          ) : commentList.length === 0 ? (
+            <div className="p-8 text-center">
+              <div
+                className="text-[#9c27b0] text-xs md:text-sm"
+                style={{ fontFamily: "'DungGeunMo', monospace" }}
+              >
+                아직 댓글이 없습니다. 첫 댓글을 작성해보세요! • No comments yet. Be the first!
+              </div>
+            </div>
+          ) : (
+            commentList.map((comment, i) => (
+              <motion.div
+                key={comment.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + i * 0.1 }}
+                className="p-4 md:p-6 hover:bg-[#fce4ec]/30 transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#e91e63] to-[#9c27b0] border-2 border-black flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className="text-[#e91e63] text-xs md:text-sm"
+                        style={{ fontFamily: "'DungGeunMo', monospace" }}
+                      >
+                        {comment.author_name}
+                      </span>
+                      <span
+                        className="text-[#9c27b0] text-[10px] md:text-xs"
+                        style={{ fontFamily: "'VT323', monospace" }}
+                      >
+                        {new Date(comment.created_at).toLocaleString('ko-KR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                    <p
+                      className="text-[#1a0033] text-xs md:text-sm leading-relaxed whitespace-pre-wrap break-words"
                       style={{ fontFamily: "'DungGeunMo', monospace" }}
                     >
-                      {comment.author}
-                    </span>
-                    <span
-                      className="text-[#9c27b0] text-[10px] md:text-xs"
-                      style={{ fontFamily: "'VT323', monospace" }}
-                    >
-                      {comment.date}
-                    </span>
+                      {comment.comment_text}
+                    </p>
                   </div>
-                  <p
-                    className="text-[#1a0033] text-xs md:text-sm leading-relaxed"
-                    style={{ fontFamily: "'DungGeunMo', monospace" }}
-                  >
-                    {comment.text}
-                  </p>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          )}
         </div>
       </motion.div>
     </motion.div>
