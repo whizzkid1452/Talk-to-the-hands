@@ -1,27 +1,11 @@
-import { useState, useEffect } from 'react';
-import { loadPosts } from '../../../posts/loadPosts';
+import { useNavigate, useLocation } from "react-router-dom";
+import { loadPosts } from "../../../posts/loadPosts";
 
 export function useTagFilter() {
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-
-  // URL에서 선택된 태그 읽기
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tag = params.get('tag');
-    setSelectedTag(tag);
-  }, []);
-
-  // URL 변경 감지 (뒤로가기/앞으로가기)
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const tag = params.get('tag');
-      setSelectedTag(tag);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const selectedTag = searchParams.get("tag");
 
   // posts에서 실제 사용된 태그들 추출 및 개수 계산
   const posts = loadPosts();
@@ -36,15 +20,14 @@ export function useTagFilter() {
 
   // 태그 클릭 핸들러
   const handleTagClick = (tag: string) => {
-    const newUrl = `${window.location.pathname}?tag=${encodeURIComponent(tag)}`;
-    window.history.pushState({ tag }, '', newUrl);
-    setSelectedTag(tag);
+    // 항상 /post 페이지로 이동하며 태그 쿼리 파라미터 전달
+    navigate(`/post?tag=${encodeURIComponent(tag)}`);
   };
 
   // 태그 필터 제거 핸들러
   const clearTagFilter = () => {
-    window.history.pushState({}, '', window.location.pathname);
-    setSelectedTag(null);
+    // 필터 제거 시에도 /post 페이지에 머물거나 이동
+    navigate("/post");
   };
 
   return {

@@ -4,6 +4,7 @@ import { RetroPostDetail } from "./RetroPostDetail";
 import { RetroMarkdownPost } from "./MarkdownPosts/RetroMarkdownPost";
 import { PenTool, Star, Sparkles, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { loadPosts } from "../../../../posts/loadPosts";
 import type { Post } from "../../../../posts/utils";
 import { useTagFilter } from "../../hooks/useTagFilter";
@@ -13,7 +14,10 @@ export function RetroPostPage() {
   const [selectedPost, setSelectedPost] = useState<number | null>(null);
   const [showMarkdownPost, setShowMarkdownPost] = useState(false);
   
-  // 태그 필터 훅 사용
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // 태그 필터 훅 사용 (이 훅은 이미 useLocation을 사용하도록 수정됨)
   const { selectedTag, usedTags, tagCounts, handleTagClick, clearTagFilter } = useTagFilter();
 
   // 마크다운 파일에서 posts 로드
@@ -24,51 +28,6 @@ export function RetroPostPage() {
     ? allPosts.filter((post) => post.tags.includes(selectedTag))
     : allPosts;
 
-  // URL에서 포스트 ID 읽기 및 초기화
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const postId = params.get('post');
-    const isMarkdown = params.get('view') === 'markdown';
-
-    if (isMarkdown) {
-      setShowMarkdownPost(true);
-    } else if (postId) {
-      // 포스트 제목으로 인덱스 찾기
-      const postIndex = allPosts.findIndex(
-        (post) => createPostSlug(post.title) === postId
-      );
-      if (postIndex !== -1) {
-        setSelectedPost(postIndex);
-      }
-    }
-  }, [allPosts]);
-
-  // 브라우저 뒤로가기/앞으로가기 처리
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const postId = params.get('post');
-      const isMarkdown = params.get('view') === 'markdown';
-
-      if (isMarkdown) {
-        setShowMarkdownPost(true);
-        setSelectedPost(null);
-      } else if (postId) {
-        const postIndex = allPosts.findIndex(
-          (post) => createPostSlug(post.title) === postId
-        );
-        setSelectedPost(postIndex !== -1 ? postIndex : null);
-        setShowMarkdownPost(false);
-      } else {
-        setSelectedPost(null);
-        setShowMarkdownPost(false);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [allPosts]);
-
   // 포스트 제목을 URL 친화적인 slug로 변환
   const createPostSlug = (title: string): string => {
     return title
@@ -77,37 +36,69 @@ export function RetroPostPage() {
       .replace(/(^-|-$)/g, '');
   };
 
+  // URL 변경 감지 (초기 로드 및 네비게이션 시 실행)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const postId = params.get('post');
+    const isMarkdown = params.get('view') === 'markdown';
+
+    if (isMarkdown) {
+      setShowMarkdownPost(true);
+      setSelectedPost(null);
+    } else if (postId) {
+      // 포스트 제목으로 인덱스 찾기
+      const postIndex = allPosts.findIndex(
+        (post) => createPostSlug(post.title) === postId
+      );
+      if (postIndex !== -1) {
+        setSelectedPost(postIndex);
+      } else {
+        setSelectedPost(null); // Invalid post ID
+      }
+      setShowMarkdownPost(false);
+    } else {
+      setSelectedPost(null);
+      setShowMarkdownPost(false);
+    }
+  }, [location.search, allPosts]);
+
   // 포스트 선택 핸들러 (URL 업데이트 포함)
   const handleSelectPost = (index: number) => {
-    const post = posts[index];
+    const post = posts[index]; // Note: using filtered posts array logic here might be tricky if preserving index of *allPosts*. 
+    // But wait, the previous code used `posts[index]` which is the filtered list.
+    // However, `setSelectedPost` uses `postIndex` which is index in `allPosts` in the `useEffect`.
+    // Let's check `useEffect`: it finds index in `allPosts`.
+    // But `handleSelectPost` receives index from `map` over `posts` (filtered).
+    // So `posts[index]` is correct for getting the post object.
+    
+    // We should probably rely on `useEffect` to set the state, just navigate here.
     const slug = createPostSlug(post.title);
-    // 선택된 태그가 있으면 유지
-    const params = new URLSearchParams();
+    
+    const params = new URLSearchParams(location.search);
     params.set('post', slug);
-    if (selectedTag) {
-      params.set('tag', selectedTag);
-    }
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({ postIndex: index }, '', newUrl);
-    setSelectedPost(index);
+    // Tag is already handled by useTagFilter/location, but let's preserve it if it's there?
+    // params.set('post', slug) appends or updates. Existing 'tag' param remains.
+    
+    navigate(`${location.pathname}?${params.toString()}`);
+    // setSelectedPost will be handled by useEffect
   };
 
   // 마크다운 포스트 표시 핸들러
   const handleShowMarkdownPost = () => {
-    const newUrl = `${window.location.pathname}?view=markdown`;
-    window.history.pushState({ markdown: true }, '', newUrl);
-    setShowMarkdownPost(true);
+    const params = new URLSearchParams(location.search);
+    params.set('view', 'markdown');
+    params.delete('post'); // Clear specific post if any
+    
+    navigate(`${location.pathname}?${params.toString()}`);
   };
 
   // 목록으로 돌아가기 핸들러
   const handleBackToList = () => {
-    // 선택된 태그가 있으면 유지
-    const url = selectedTag
-      ? `${window.location.pathname}?tag=${encodeURIComponent(selectedTag)}`
-      : window.location.pathname;
-    window.history.pushState({}, '', url);
-    setSelectedPost(null);
-    setShowMarkdownPost(false);
+    const params = new URLSearchParams(location.search);
+    params.delete('post');
+    params.delete('view');
+    
+    navigate(`${location.pathname}?${params.toString()}`);
   };
 
 
