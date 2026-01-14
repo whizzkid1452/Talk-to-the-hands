@@ -19,7 +19,7 @@ export function RetroSidebar() {
       <motion.div
         initial={{ x: -300 }}
         animate={{ x: 0 }}
-        className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-[#f8bbd0] border-r-4 border-[#ec407a] shadow-[8px_0px_0px_0px_rgba(0,0,0,0.3)] z-40"
+        className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-[#f8bbd0] border-r-4 border-[#ec407a] shadow-[8px_0px_0px_0px_rgba(0,0,0,0.3)] z-40 overflow-x-hidden"
       >
         <SidebarContent 
           menuItems={MENU_ITEMS} 
@@ -45,7 +45,7 @@ export function RetroSidebar() {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed left-0 top-0 h-full w-64 md:w-72 bg-[#f8bbd0] border-r-4 border-[#ec407a] shadow-[8px_0px_0px_0px_rgba(0,0,0,0.3)] z-50 lg:hidden"
+              className="fixed left-0 top-0 h-full w-64 md:w-72 bg-[#f8bbd0] border-r-4 border-[#ec407a] shadow-[8px_0px_0px_0px_rgba(0,0,0,0.3)] z-50 lg:hidden overflow-x-hidden"
             >
               <SidebarContent 
                 menuItems={MENU_ITEMS} 

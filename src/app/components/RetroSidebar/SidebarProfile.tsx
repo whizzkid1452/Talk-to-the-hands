@@ -3,7 +3,7 @@ import { Heart } from "lucide-react";
 
 export function SidebarProfile() {
   return (
-    <div className="p-4 border-b-4 border-[#ec407a] bg-white">
+    <div className="p-4 border-b-4 border-[#ec407a] bg-white max-w-full overflow-hidden">
       <div className="flex items-center gap-3">
         <motion.div
           animate={{ rotate: [0, 5, -5, 0] }}

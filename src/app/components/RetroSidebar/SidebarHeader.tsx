@@ -3,7 +3,7 @@ import { Star } from "lucide-react";
 
 export function SidebarHeader() {
   return (
-    <div className="bg-gradient-to-r from-[#ff69b4] via-[#e91e63] to-[#ff69b4] p-4 border-b-4 border-[#ec407a]">
+    <div className="bg-gradient-to-r from-[#ff69b4] via-[#e91e63] to-[#ff69b4] p-4 border-b-4 border-[#ec407a] max-w-full overflow-hidden">
       <div className="flex items-center gap-2 justify-center">
         <motion.div
           animate={{ rotate: [0, 360] }}

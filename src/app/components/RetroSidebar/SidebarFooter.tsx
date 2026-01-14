@@ -14,7 +14,7 @@ const SYSTEM_STATS: SystemStat[] = [
 
 export function SidebarFooter() {
   return (
-    <div className="p-4 border-t-4 border-[#ec407a] bg-white space-y-2">
+    <div className="p-4 border-t-4 border-[#ec407a] bg-white space-y-2 max-w-full overflow-hidden">
       {SYSTEM_STATS.map((stat) => (
         <div key={stat.label} className="flex justify-between items-center">
           <span 

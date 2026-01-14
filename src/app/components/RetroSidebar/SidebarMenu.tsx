@@ -12,7 +12,7 @@ export function SidebarMenu({ menuItems, onItemClick }: SidebarMenuProps) {
   const location = useLocation();
 
   return (
-    <nav className="flex-1 overflow-y-auto p-2">
+    <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
       {menuItems.map((item, index) => {
         const Icon = item.icon;
         const isActive = location.pathname === item.path;
