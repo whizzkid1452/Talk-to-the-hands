@@ -17,7 +17,7 @@ export const SchedulePieChart = memo(function SchedulePieChart() {
       preserveAspectRatio="xMidYMid meet"
     >
       {SCHEDULE.map((slot, index) => {
-        // 제목이 없는 경우(9-11월)는 파이 조각만 그리고 텍스트는 표시하지 않음
+        // 제목이 없는 경우는 파이 조각만 그리고 텍스트는 표시하지 않음
         if (!slot.title) {
           return (
             <path
@@ -42,11 +42,39 @@ export const SchedulePieChart = memo(function SchedulePieChart() {
           textRadius
         );
 
-        // 월 범위 계산 (12월을 넘어가는 경우 처리)
-        let monthRange = slot.endMonth - slot.startMonth;
-        if (slot.startMonth > slot.endMonth) {
-          monthRange = (12 - slot.startMonth) + slot.endMonth;
-        }
+        // 텍스트를 줄바꿈하기 위해 적절한 길이로 나누기
+        const splitText = (text: string, maxLength: number = 8): string[] => {
+          const words = text.split(/(\s+)/);
+          const lines: string[] = [];
+          let currentLine = "";
+
+          for (const word of words) {
+            // 공백도 포함하여 처리
+            if ((currentLine + word).length <= maxLength) {
+              currentLine += word;
+            } else {
+              if (currentLine.trim()) {
+                lines.push(currentLine);
+              }
+              // 현재 단어가 공백이 아니면 새 줄에 추가
+              if (word.trim()) {
+                currentLine = word;
+              } else {
+                currentLine = "";
+              }
+            }
+          }
+          
+          if (currentLine.trim()) {
+            lines.push(currentLine);
+          }
+          
+          return lines.length > 0 ? lines : [text];
+        };
+
+        const textLines = splitText(slot.title);
+        const lineHeight = 5; // 줄 간격
+        const startY = textPos.y - ((textLines.length - 1) * lineHeight) / 2;
 
         return (
           <g key={index}>
@@ -62,16 +90,22 @@ export const SchedulePieChart = memo(function SchedulePieChart() {
             />
             <text
               x={textPos.x}
-              y={textPos.y}
+              y={startY}
               textAnchor="middle"
               dominantBaseline="middle"
               transform={`rotate(${textPos.angle}, ${textPos.x}, ${textPos.y})`}
               className={pieChartStyles.text}
-              style={getPieChartTextStyle(
-                monthRange >= 3 ? "3.2px" : "2.4px"
-              )}
+              style={getPieChartTextStyle("4px")}
             >
-              {slot.title}
+              {textLines.map((line, lineIndex) => (
+                <tspan
+                  key={lineIndex}
+                  x={textPos.x}
+                  dy={lineIndex === 0 ? 0 : lineHeight}
+                >
+                  {line}
+                </tspan>
+              ))}
             </text>
           </g>
         );

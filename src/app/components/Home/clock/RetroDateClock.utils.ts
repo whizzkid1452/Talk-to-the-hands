@@ -1,8 +1,11 @@
-// 월을 각도로 변환 (12월 = 0도, 1월 = 30도, ...)
+// 월을 각도로 변환 (12월 = 위쪽(270도), 1월 = 300도, ...)
 function monthToAngle(month: number): number {
-  // 12월 = 0도, 1월 = 30도, 2월 = 60도, ...
-  let angle = (month - 12) * 30;
-  // 음수 각도를 양수로 변환
+  // 12월이 12시 방향(위쪽)이 되도록 설정
+  // SVG 좌표계: 0도 = 오른쪽(3시), 90도 = 아래(6시), 180도 = 왼쪽(9시), 270도 = 위(12시)
+  // 시계 방향: 12시(위) = 270도, 1시 = 300도, 2시 = 330도, 3시 = 0도, ...
+  // 12월 = 270도, 1월 = 300도, 2월 = 330도, 3월 = 0도, 4월 = 30도, ..., 11월 = 240도
+  // 공식: 각도 = ((month - 12) * 30 + 270) % 360
+  let angle = ((month - 12) * 30 + 270) % 360;
   if (angle < 0) angle += 360;
   return angle;
 }
@@ -15,9 +18,13 @@ export function createPieSlice(
   centerY: number,
   radius: number
 ): string {
-  // 12월이 12시 방향(위쪽)이 되도록 -90도 오프셋 적용
-  const startAngle = monthToAngle(startMonth) - 90;
-  const endAngle = monthToAngle(endMonth) - 90;
+  const startAngle = monthToAngle(startMonth);
+  // 12월을 넘어가는 경우 처리 (예: 12월-1월)
+  let endAngle = monthToAngle(endMonth);
+  if (endMonth < startMonth) {
+    // 12월을 넘어가는 경우
+    endAngle = monthToAngle(endMonth + 12);
+  }
 
   const startRad = (startAngle * Math.PI) / 180;
   const endRad = (endAngle * Math.PI) / 180;
@@ -27,7 +34,7 @@ export function createPieSlice(
   const x2 = centerX + radius * Math.cos(endRad);
   const y2 = centerY + radius * Math.sin(endRad);
 
-  // 각도 차이 계산 (12월을 넘어가는 경우 처리)
+  // 각도 차이 계산
   let angleDiff = endAngle - startAngle;
   if (angleDiff < 0) angleDiff += 360;
   const largeArc = angleDiff > 180 ? 1 : 0;
@@ -46,17 +53,16 @@ export function getTextPosition(
   // 중간 월 계산 (12월을 넘어가는 경우 처리)
   let midMonth: number;
   if (startMonth < endMonth) {
-    // 일반적인 경우 (예: 3-5월)
+    // 일반적인 경우
     midMonth = (startMonth + endMonth) / 2;
   } else {
-    // 12월을 넘어가는 경우 (예: 12-2월)
-    // 12, 1, 2월의 중간은 1월
+    // 12월을 넘어가는 경우 (예: 12월-1월)
     const totalMonths = (12 - startMonth) + endMonth;
     midMonth = startMonth + totalMonths / 2;
     if (midMonth > 12) midMonth -= 12;
   }
   
-  const angle = monthToAngle(midMonth) - 90;
+  const angle = monthToAngle(midMonth);
   const rad = (angle * Math.PI) / 180;
 
   return {
