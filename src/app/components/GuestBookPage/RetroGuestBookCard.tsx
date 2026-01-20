@@ -57,7 +57,7 @@ export function RetroGuestBookCard({
           whileHover={{ scale: 1.2 }}
           whileTap={{ scale: 0.9 }}
           onClick={handleDelete}
-          className="w-7 h-7 bg-red-500 border-2 border-black hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center"
+          className="w-7 h-7 bg-red-500 border-2 border-black hover:bg-red-600 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 flex items-center justify-center"
         >
           <Trash2 className="w-4 h-4 text-white" />
         </motion.button>
