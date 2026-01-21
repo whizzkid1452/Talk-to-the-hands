@@ -97,6 +97,14 @@ export function RetroWorkLog() {
   const [endTime, setEndTime] = useState("");
   const [leaveType, setLeaveType] = useState("none");
 
+  const [editingRecord, setEditingRecord] = useState<WorkRecord | null>(null);
+  const [editForm, setEditForm] = useState<{
+    date: string;
+    startTime: string;
+    endTime: string;
+    leaveType: string;
+  }>({ date: "", startTime: "", endTime: "", leaveType: "none" });
+
   // Load from localStorage
   useEffect(() => {
     const savedSettings = localStorage.getItem("retro-work-settings");
@@ -230,6 +238,69 @@ export function RetroWorkLog() {
       setSettings((prev) => ({ ...prev, usedLeaveDays: 0 }));
       alert("초기화되었습니다! ✨");
     }
+  };
+
+  const handleOpenEdit = (record: WorkRecord) => {
+    setEditingRecord(record);
+    setEditForm({
+      date: record.date,
+      startTime: record.startTime === "-" ? "" : record.startTime,
+      endTime: record.endTime === "-" ? "" : record.endTime,
+      leaveType: record.leaveType || "none",
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingRecord) return;
+    if (!editForm.date) {
+      alert("날짜를 선택해주세요! 💕");
+      return;
+    }
+
+    const workMinutes = calculateMinutes(
+      editForm.startTime,
+      editForm.endTime,
+      editForm.leaveType
+    );
+    const leaveMinutes =
+      LEAVE_TYPES[editForm.leaveType as keyof typeof LEAVE_TYPES].hours * 60;
+    const totalDailyMinutes = workMinutes + leaveMinutes;
+    const targetMinutes = settings.targetHours * 60;
+    const diffMinutes = totalDailyMinutes - targetMinutes;
+
+    const updatedRecord: WorkRecord = {
+      id: editForm.date,
+      date: editForm.date,
+      startTime: editForm.leaveType === "full" ? "-" : editForm.startTime || "-",
+      endTime: editForm.leaveType === "full" ? "-" : editForm.endTime || "-",
+      leaveType: editForm.leaveType,
+      workHours: (workMinutes / 60).toFixed(2),
+      diff: (diffMinutes / 60).toFixed(2),
+    };
+
+    const oldLeaveValue =
+      LEAVE_TYPES[editingRecord.leaveType as keyof typeof LEAVE_TYPES]
+        ?.leaveValue ?? 0;
+    const newLeaveValue =
+      LEAVE_TYPES[editForm.leaveType as keyof typeof LEAVE_TYPES]?.leaveValue ??
+      0;
+    const deltaLeave = newLeaveValue - oldLeaveValue;
+
+    setSettings((prev) => ({
+      ...prev,
+      usedLeaveDays: Math.max(0, prev.usedLeaveDays + deltaLeave),
+    }));
+
+    setRecords((prev) => {
+      const filtered = prev.filter(
+        (r) => r.id !== editingRecord.id && r.date !== editForm.date
+      );
+      return [updatedRecord, ...filtered].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    });
+
+    setEditingRecord(null);
   };
 
   const downloadCSV = () => {
@@ -890,35 +961,46 @@ export function RetroWorkLog() {
                               </div>
                             </div>
 
-                            {/* Delete Button */}
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => {
-                                if (
-                                  confirm("이 기록을 삭제하시겠습니까? 💕")
-                                ) {
-                                  const leaveValue =
-                                    LEAVE_TYPES[
-                                      record.leaveType as keyof typeof LEAVE_TYPES
-                                    ]?.leaveValue ?? 0;
-                                  setSettings((prev) => ({
-                                    ...prev,
-                                    usedLeaveDays: Math.max(
-                                      0,
-                                      prev.usedLeaveDays - leaveValue
-                                    ),
-                                  }));
-                                  setRecords((prev) =>
-                                    prev.filter((r) => r.id !== record.id)
-                                  );
-                                }
-                              }}
-                              className="absolute top-2 right-2 p-1 bg-white border-2 border-red-400 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                              style={{ imageRendering: "pixelated" }}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </motion.button>
+                            {/* Edit & Delete Buttons */}
+                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleOpenEdit(record)}
+                                className="p-1 bg-white border-2 border-indigo-400 text-indigo-500"
+                                style={{ imageRendering: "pixelated" }}
+                              >
+                                <Edit3 className="w-3 h-3" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => {
+                                  if (
+                                    confirm("이 기록을 삭제하시겠습니까? 💕")
+                                  ) {
+                                    const leaveValue =
+                                      LEAVE_TYPES[
+                                        record.leaveType as keyof typeof LEAVE_TYPES
+                                      ]?.leaveValue ?? 0;
+                                    setSettings((prev) => ({
+                                      ...prev,
+                                      usedLeaveDays: Math.max(
+                                        0,
+                                        prev.usedLeaveDays - leaveValue
+                                      ),
+                                    }));
+                                    setRecords((prev) =>
+                                      prev.filter((r) => r.id !== record.id)
+                                    );
+                                  }
+                                }}
+                                className="p-1 bg-white border-2 border-red-400 text-red-500"
+                                style={{ imageRendering: "pixelated" }}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </motion.button>
+                            </div>
                           </motion.div>
                         ))
                       )}
@@ -1114,6 +1196,186 @@ export function RetroWorkLog() {
                   >
                     SAVE & CLOSE
                   </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Record Modal */}
+      <AnimatePresence>
+        {editingRecord && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setEditingRecord(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#c0c0c0] border-2 border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] w-full max-w-md mx-4"
+              style={{
+                borderTopColor: "#ffffff",
+                borderLeftColor: "#ffffff",
+                borderRightColor: "#808080",
+                borderBottomColor: "#808080",
+                imageRendering: "pixelated",
+              }}
+            >
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-500 px-2 py-1 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Edit3 className="w-4 h-4 text-white" />
+                  <span
+                    className="text-white text-xs"
+                    style={{ fontFamily: "'Press Start 2P', monospace" }}
+                  >
+                    EDIT RECORD
+                  </span>
+                </div>
+                <motion.button
+                  whileHover={{ backgroundColor: "#ff1493" }}
+                  onClick={() => setEditingRecord(null)}
+                  className="w-5 h-5 bg-[#c0c0c0] border flex items-center justify-center"
+                  style={{
+                    borderTopColor: "#ffffff",
+                    borderLeftColor: "#ffffff",
+                    borderRightColor: "#808080",
+                    borderBottomColor: "#808080",
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </motion.button>
+              </div>
+
+              <div className="p-6 bg-white">
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      className="text-[9px] font-bold text-gray-600 mb-1 block"
+                      style={{ fontFamily: "'Press Start 2P', monospace" }}
+                    >
+                      DATE
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full bg-white border-2 border-gray-400 px-3 py-2 text-sm"
+                      style={{ fontFamily: "'DungGeunMo', monospace" }}
+                      value={editForm.date}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({ ...prev, date: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        className="text-[9px] font-bold text-gray-600 mb-1 block"
+                        style={{ fontFamily: "'Press Start 2P', monospace" }}
+                      >
+                        START
+                      </label>
+                      <input
+                        type="time"
+                        disabled={editForm.leaveType === "full"}
+                        className="w-full bg-white border-2 border-gray-400 px-3 py-2 text-sm disabled:opacity-50"
+                        style={{ fontFamily: "'DungGeunMo', monospace" }}
+                        value={editForm.startTime}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            startTime: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label
+                        className="text-[9px] font-bold text-gray-600 mb-1 block"
+                        style={{ fontFamily: "'Press Start 2P', monospace" }}
+                      >
+                        END
+                      </label>
+                      <input
+                        type="time"
+                        disabled={editForm.leaveType === "full"}
+                        className="w-full bg-white border-2 border-gray-400 px-3 py-2 text-sm disabled:opacity-50"
+                        style={{ fontFamily: "'DungGeunMo', monospace" }}
+                        value={editForm.endTime}
+                        onChange={(e) =>
+                          setEditForm((prev) => ({
+                            ...prev,
+                            endTime: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      className="text-[9px] font-bold text-gray-600 mb-1 block"
+                      style={{ fontFamily: "'Press Start 2P', monospace" }}
+                    >
+                      TYPE
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(LEAVE_TYPES).map(([key, value]) => (
+                        <motion.button
+                          key={key}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() =>
+                            setEditForm((prev) => ({ ...prev, leaveType: key }))
+                          }
+                          className={`py-2 px-2 text-[9px] font-bold border-2 transition-all ${
+                            editForm.leaveType === key
+                              ? value.color +
+                                " border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                              : "bg-white border-gray-400 text-gray-700"
+                          }`}
+                          style={{
+                            fontFamily: "'Press Start 2P', monospace",
+                            imageRendering: "pixelated",
+                          }}
+                        >
+                          {value.label}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setEditingRecord(null)}
+                      className="flex-1 bg-white border-2 border-gray-600 py-2 text-[9px] font-bold"
+                      style={{
+                        fontFamily: "'Press Start 2P', monospace",
+                        imageRendering: "pixelated",
+                      }}
+                    >
+                      CANCEL
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleSaveEdit}
+                      className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-2 border-black py-2 text-[9px] font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                      style={{
+                        fontFamily: "'Press Start 2P', monospace",
+                        imageRendering: "pixelated",
+                      }}
+                    >
+                      SAVE
+                    </motion.button>
+                  </div>
                 </div>
               </div>
             </motion.div>
