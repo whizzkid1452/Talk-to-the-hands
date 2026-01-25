@@ -33,11 +33,12 @@ export function RetroPlannerMenuBar({
   const menuBarRef = useRef<HTMLDivElement>(null);
   
   const categories = [
-    "업무 Work",
-    "공부 Study",
-    "개인 Personal",
-    "운동 Exercise",
-    "기타 Other",
+    "All",
+    "Dev",
+    "Art",
+    "CEO",
+    "Act",
+    "Exc",
   ];
 
   useEffect(() => {
@@ -157,7 +158,7 @@ export function RetroPlannerMenuBar({
                 }`}
               >
                 <span
-                  className={`w-3 h-3 border-2 border-black ${categoryColors[category] || categoryColors["기타 Other"]}`}
+                  className={`w-3 h-3 border-2 border-black ${categoryColors[category] || categoryColors["All"]}`}
                 />
                 {category.split(" ")[0]}
               </motion.button>

@@ -105,7 +105,7 @@ export function RetroPlannerTask({
 
             {/* Category Badge */}
             <span
-              className={`${categoryColors[category] || categoryColors["기타 Other"]} text-white text-[10px] px-2 py-1 border-2 border-black`}
+              className={`${categoryColors[category] || categoryColors["All"]} text-white text-[10px] px-2 py-1 border-2 border-black`}
               style={{ fontFamily: "'DungGeunMo', monospace" }}
             >
               {category.split(" ")[0]}

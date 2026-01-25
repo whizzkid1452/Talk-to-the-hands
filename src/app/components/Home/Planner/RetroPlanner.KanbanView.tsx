@@ -32,14 +32,15 @@ function CardForm({
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [priority, setPriority] = useState<"high" | "medium" | "low">(initialData?.priority || "medium");
-  const [category, setCategory] = useState(initialData?.category || "업무 Work");
+  const [category, setCategory] = useState(initialData?.category || "All");
 
   const categories = [
-    "업무 Work",
-    "공부 Study",
-    "개인 Personal",
-    "운동 Exercise",
-    "기타 Other",
+    "All",
+    "Dev",
+    "Art",
+    "CEO",
+    "Act",
+    "Exc",
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -150,7 +151,7 @@ function KanbanCardItem({
   };
 
   const priorityStyle = priorityColors[card.priority];
-  const categoryColor = categoryColors[card.category] || categoryColors["기타 Other"];
+  const categoryColor = categoryColors[card.category] || categoryColors["All"];
 
   return (
     <div className="relative">

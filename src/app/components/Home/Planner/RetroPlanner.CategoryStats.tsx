@@ -5,11 +5,12 @@ import { getFontStyle } from "./RetroPlanner.styles";
 import type { Task } from "./RetroPlanner.types";
 
 const categoryColorValues: Record<string, string> = {
-  "업무 Work": "#e91e63",
-  "공부 Study": "#9c27b0",
-  "개인 Personal": "#00bcd4",
-  "운동 Exercise": "#4caf50",
-  "기타 Other": "#ff9800",
+  "All": "#FFB6C1",
+  "Dev": "#3B82F6",
+  "Art": "#EC4899",
+  "CEO": "#8B5CF6",
+  "Act": "#10B981",
+  "Exc": "#F59E0B",
 };
 
 interface RetroPlannerCategoryStatsProps {
@@ -35,7 +36,7 @@ function calculateCategoryStats(tasks: Task[]): Record<string, number> {
   const stats: Record<string, number> = {};
   
   tasks.forEach((task) => {
-    const category = task.category || "기타 Other";
+    const category = task.category || "All";
     const trackedTime = task.trackedTime || 0;
     stats[category] = (stats[category] || 0) + trackedTime;
   });
@@ -53,11 +54,12 @@ export function RetroPlannerCategoryStats({ tasks }: RetroPlannerCategoryStatsPr
   }
   
   const categoryOrder = [
-    "업무 Work",
-    "공부 Study",
-    "개인 Personal",
-    "운동 Exercise",
-    "기타 Other",
+    "All",
+    "Dev",
+    "Art",
+    "CEO",
+    "Act",
+    "Exc",
   ];
   
   const sortedCategories = Object.keys(categoryStats)
@@ -103,7 +105,7 @@ export function RetroPlannerCategoryStats({ tasks }: RetroPlannerCategoryStatsPr
               className="flex items-center gap-2"
             >
               <span
-                className={`${categoryColors[category] || categoryColors["기타 Other"]} text-white text-[10px] px-2 py-1 border-2 border-black flex-shrink-0`}
+                className={`${categoryColors[category] || categoryColors["All"]} text-white text-[10px] px-2 py-1 border-2 border-black flex-shrink-0`}
                 style={{ fontFamily: "'DungGeunMo', monospace" }}
               >
                 {category.split(" ")[0]}
@@ -116,7 +118,7 @@ export function RetroPlannerCategoryStats({ tasks }: RetroPlannerCategoryStatsPr
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="h-full"
                   style={{
-                    backgroundColor: categoryColorValues[category] || categoryColorValues["기타 Other"],
+                    backgroundColor: categoryColorValues[category] || categoryColorValues["All"],
                   }}
                 />
               </div>

@@ -37,11 +37,12 @@ export const CALENDAR_GRID_TOTAL_CELLS = 42;
 export const LAST_DAY_OF_WEEK_INDEX = 6;
 
 export const categoryColors: Record<string, string> = {
-  "업무 Work": "bg-[#e91e63]",
-  "공부 Study": "bg-[#9c27b0]",
-  "개인 Personal": "bg-[#00bcd4]",
-  "운동 Exercise": "bg-[#4caf50]",
-  "기타 Other": "bg-[#ff9800]",
+  "All": "bg-[#FFB6C1]",
+  "Dev": "bg-[#3B82F6]",
+  "Art": "bg-[#EC4899]",
+  "CEO": "bg-[#8B5CF6]",
+  "Act": "bg-[#10B981]",
+  "Exc": "bg-[#F59E0B]",
 } as const;
 
 export const weekdays = ["일", "월", "화", "수", "목", "금", "토"] as const;

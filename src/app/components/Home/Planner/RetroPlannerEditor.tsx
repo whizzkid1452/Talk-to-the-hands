@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { X, Save, Star, Briefcase, BookOpen, User, Dumbbell, MoreHorizontal } from "lucide-react";
+import { X, Save, Star, Grid3x3, Code, Palette, Briefcase, Activity, Target } from "lucide-react";
 import { useState } from "react";
 
 interface TaskData {
@@ -19,17 +19,18 @@ interface PlannerEditorProps {
 export function RetroPlannerEditor({ onClose, onSave }: PlannerEditorProps) {
   const [title, setTitle] = useState("");
   const [time, setTime] = useState("09:00");
-  const [category, setCategory] = useState("업무 Work");
+  const [category, setCategory] = useState("All");
   const [priority, setPriority] = useState<"high" | "medium" | "low">("medium");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const categories = [
-    { icon: Briefcase, label: "업무 Work", color: "#e91e63" },
-    { icon: BookOpen, label: "공부 Study", color: "#9c27b0" },
-    { icon: User, label: "개인 Personal", color: "#00bcd4" },
-    { icon: Dumbbell, label: "운동 Exercise", color: "#4caf50" },
-    { icon: MoreHorizontal, label: "기타 Other", color: "#ff9800" },
+    { icon: Grid3x3, label: "All", color: "#FFB6C1" },
+    { icon: Code, label: "Dev", color: "#3B82F6" },
+    { icon: Palette, label: "Art", color: "#EC4899" },
+    { icon: Briefcase, label: "CEO", color: "#8B5CF6" },
+    { icon: Activity, label: "Act", color: "#10B981" },
+    { icon: Target, label: "Exc", color: "#F59E0B" },
   ];
 
   const priorities = [

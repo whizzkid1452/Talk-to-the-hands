@@ -20,7 +20,7 @@ function groupTasksByCategory(tasks: Task[]): Record<string, Task[]> {
   const grouped: Record<string, Task[]> = {};
   
   tasks.forEach((task) => {
-    const category = task.category || "기타 Other";
+    const category = task.category || "All";
     if (!grouped[category]) {
       grouped[category] = [];
     }
@@ -46,11 +46,12 @@ export function RetroPlannerTaskList({
     : groupedTasks;
   
   const categoryOrder = [
-    "업무 Work",
-    "공부 Study",
-    "개인 Personal",
-    "운동 Exercise",
-    "기타 Other",
+    "All",
+    "Dev",
+    "Art",
+    "CEO",
+    "Act",
+    "Exc",
   ];
   
   // 카테고리 순서대로 정렬
@@ -101,7 +102,7 @@ export function RetroPlannerTaskList({
               className="flex items-center gap-2 mb-2"
             >
               <span
-                className={`${categoryColors[category] || categoryColors["기타 Other"]} text-white text-[10px] px-2 py-1 border-2 border-black`}
+                className={`${categoryColors[category] || categoryColors["All"]} text-white text-[10px] px-2 py-1 border-2 border-black`}
                 style={{ fontFamily: "'DungGeunMo', monospace" }}
               >
                 {category.split(" ")[0]}
