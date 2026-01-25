@@ -15,6 +15,7 @@ import { RetroPlannerCanvasDecorations } from "./RetroPlanner.CanvasDecorations"
 import { RetroPlannerWeekView } from "./RetroPlanner.WeekView";
 import { RetroPlannerMonthView } from "./RetroPlanner.MonthView";
 import { RetroPlannerTimelineView } from "./RetroPlanner.TimelineView";
+import { RetroPlannerKanbanView } from "./RetroPlanner.KanbanView";
 import { RetroPlannerStats } from "./RetroPlanner.Stats";
 import { RetroPlannerTaskList } from "./RetroPlanner.TaskList";
 import { RetroPlannerPagination } from "./RetroPlanner.Pagination";
@@ -52,6 +53,7 @@ export function RetroPlanner() {
     handleToday,
     handleSaveTask,
     handleToggleTask,
+    handleStatusChange,
     handleDeleteTask,
     handleTimeUpdate,
     handlePrevPage,
@@ -127,6 +129,15 @@ export function RetroPlanner() {
                           />
                         )}
 
+                        {viewMode === "kanban" && (
+                          <RetroPlannerKanbanView
+                            tasks={tasks}
+                            onStatusChange={handleStatusChange}
+                            onToggleTask={handleToggleTask}
+                            onDeleteTask={handleDeleteTask}
+                          />
+                        )}
+
                         {viewMode === "week" && (
                           <RetroPlannerWeekView
                             weekDates={weekDates}
@@ -144,7 +155,7 @@ export function RetroPlanner() {
                           />
                         )}
 
-                        {viewMode !== "timeline" && (
+                        {viewMode !== "timeline" && viewMode !== "kanban" && (
                           <>
                             <RetroPlannerStats
                               totalCount={totalCount}
@@ -163,17 +174,21 @@ export function RetroPlanner() {
                           </>
                         )}
 
-                        <RetroPlannerPagination
-                          currentPage={currentPage}
-                          totalPages={totalPages}
-                          onPrevPage={handlePrevPage}
-                          onNextPage={handleNextPage}
-                        />
+                        {viewMode !== "kanban" && (
+                          <>
+                            <RetroPlannerPagination
+                              currentPage={currentPage}
+                              totalPages={totalPages}
+                              onPrevPage={handlePrevPage}
+                              onNextPage={handleNextPage}
+                            />
 
-                        <RetroPlannerProgressBar
-                          totalCount={totalCount}
-                          completedCount={completedCount}
-                        />
+                            <RetroPlannerProgressBar
+                              totalCount={totalCount}
+                              completedCount={completedCount}
+                            />
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

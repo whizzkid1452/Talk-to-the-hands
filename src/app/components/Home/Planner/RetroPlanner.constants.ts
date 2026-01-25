@@ -52,6 +52,12 @@ export const monthNamesEn = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "A
 
 export const menuItems = ["File", "Edit", "View", "Image", "Colors", "Help"] as const;
 
+export const kanbanColumns = [
+  { id: "todo", label: "할 일 • Todo", color: "#FFB6C1" },
+  { id: "in_progress", label: "진행 중 • In Progress", color: "#FF69B4" },
+  { id: "done", label: "완료 • Done", color: "#4CAF50" },
+] as const;
+
 export const plannerModes: PlannerModeOption[] = [
   { mode: "All", label: "All", icon: Grid3x3, color: "#FFB6C1" },
   { mode: "Dev", label: "Dev", icon: Code, color: "#3B82F6" },

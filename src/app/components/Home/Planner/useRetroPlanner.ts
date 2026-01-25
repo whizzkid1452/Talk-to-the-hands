@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import type { Task, PlannerMode } from "./RetroPlanner.types";
+import type { Task, PlannerMode, ViewMode, TaskStatus } from "./RetroPlanner.types";
 import { tasksPerPage, DAYS_IN_WEEK } from "./RetroPlanner.constants";
 import {
   formatDate,
@@ -24,6 +24,7 @@ const initialTasks: Task[] = [
     category: "업무 Work",
     priority: "high",
     completed: false,
+    status: "in_progress",
     date: "2026-01-02",
   },
   {
@@ -33,6 +34,7 @@ const initialTasks: Task[] = [
     category: "공부 Study",
     priority: "medium",
     completed: false,
+    status: "todo",
     date: "2026-01-02",
   },
   {
@@ -42,6 +44,7 @@ const initialTasks: Task[] = [
     category: "운동 Exercise",
     priority: "medium",
     completed: true,
+    status: "done",
     date: "2026-01-02",
   },
   {
@@ -51,6 +54,7 @@ const initialTasks: Task[] = [
     category: "개인 Personal",
     priority: "low",
     completed: false,
+    status: "todo",
     date: "2026-01-02",
   },
 ];
@@ -58,7 +62,7 @@ const initialTasks: Task[] = [
 export function useRetroPlanner() {
   const [showEditor, setShowEditor] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"today" | "week" | "month" | "timeline">("week");
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [plannerMode, setPlannerMode] = useState<PlannerMode>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -104,6 +108,7 @@ export function useRetroPlanner() {
         category: "공부 Study",
         priority: "high",
         completed: false,
+        status: "todo",
         date: todayStr,
       },
       {
@@ -113,6 +118,7 @@ export function useRetroPlanner() {
         category: "업무 Work",
         priority: "medium",
         completed: false,
+        status: "in_progress",
         date: todayStr,
       },
       {
@@ -122,6 +128,7 @@ export function useRetroPlanner() {
         category: "공부 Study",
         priority: "medium",
         completed: false,
+        status: "todo",
         date: todayStr,
       },
     ];
@@ -217,6 +224,7 @@ export function useRetroPlanner() {
       id: Date.now(),
       ...taskData,
       completed: false,
+      status: "todo",
       date: taskDate,
       startDate: taskData.startDate,
       endDate: taskData.endDate,
@@ -255,6 +263,41 @@ export function useRetroPlanner() {
       }
     } else {
       setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)));
+    }
+  };
+
+  const handleStatusChange = async (id: number, newStatus: TaskStatus) => {
+    const task = allTasks.find((t) => t.id === id);
+    if (!task) return;
+
+    const isCompleted = newStatus === "done";
+
+    if (task.googleEventId) {
+      setGoogleCalendarTasks(googleCalendarTasks.map((t) => 
+        t.id === id ? { ...t, status: newStatus, completed: isCompleted } : t
+      ));
+      
+      try {
+        const categoryShort = getCategoryShortName(task.category);
+        const priorityNumber = getPriorityNumber(task.priority);
+        const completedMark = isCompleted ? "(✓)" : "";
+        const newTitle = `${task.title} (${categoryShort})(${priorityNumber})${completedMark}`;
+        
+        await updateCalendarEvent(task.googleEventId, {
+          summary: newTitle,
+        });
+        await refreshCalendarEvents();
+      } catch (error) {
+        console.error("상태 변경 실패:", error);
+        alert("상태 변경에 실패했습니다.");
+        setGoogleCalendarTasks(googleCalendarTasks.map((t) => 
+          t.id === id ? { ...t, status: task.status, completed: task.completed } : t
+        ));
+      }
+    } else {
+      setTasks(tasks.map((t) => 
+        t.id === id ? { ...t, status: newStatus, completed: isCompleted } : t
+      ));
     }
   };
 
@@ -365,6 +408,7 @@ export function useRetroPlanner() {
     handleToday,
     handleSaveTask,
     handleToggleTask,
+    handleStatusChange,
     handleDeleteTask,
     handleTimeUpdate,
     handlePrevPage,

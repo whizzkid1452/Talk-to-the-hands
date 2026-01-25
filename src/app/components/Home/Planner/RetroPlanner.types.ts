@@ -1,3 +1,5 @@
+export type TaskStatus = "todo" | "in_progress" | "done";
+
 export interface Task {
   id: number;
   title: string;
@@ -5,6 +7,7 @@ export interface Task {
   category: string;
   priority: "high" | "medium" | "low";
   completed: boolean;
+  status: TaskStatus;
   date: string;
   googleEventId?: string;
   startDate?: string; // 시작 날짜 (YYYY-MM-DD)
@@ -51,6 +54,8 @@ export interface Tool {
 }
 
 export type PlannerMode = "All" | "Dev" | "Art" | "CEO" | "Act" | "Exc";
+
+export type ViewMode = "today" | "week" | "month" | "timeline" | "kanban";
 
 export interface PlannerModeOption {
   mode: PlannerMode;

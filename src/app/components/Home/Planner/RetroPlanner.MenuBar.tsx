@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { containerStyles, buttonStyles, getFontStyle } from "./RetroPlanner.styles";
-import type { DisplayDate, MonthDisplay } from "./RetroPlanner.types";
+import type { DisplayDate, MonthDisplay, ViewMode } from "./RetroPlanner.types";
 import { RetroPlannerDatePicker } from "./RetroPlanner.DatePicker";
 import { categoryColors } from "./RetroPlanner.constants";
 
 interface RetroPlannerMenuBarProps {
-  viewMode: "today" | "week" | "month" | "timeline";
-  onViewModeChange: (mode: "today" | "week" | "month" | "timeline") => void;
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
   displayDate: DisplayDate;
   monthDisplay: MonthDisplay;
   selectedDate: Date;
@@ -102,6 +102,15 @@ export function RetroPlannerMenuBar({
         style={viewMode === "timeline" ? { backgroundColor: "#FFB6C1", color: "#C2185B" } : {}}
       >
         Timeline
+      </motion.button>
+      
+      <motion.button
+        whileHover={{ backgroundColor: "#FFB6C1", color: "#C2185B" }}
+        onClick={() => onViewModeChange("kanban")}
+        className={buttonStyles.menuItem}
+        style={viewMode === "kanban" ? { backgroundColor: "#FFB6C1", color: "#C2185B" } : {}}
+      >
+        Kanban
       </motion.button>
       
       {/* Category Filter */}

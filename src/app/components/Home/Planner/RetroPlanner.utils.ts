@@ -1,4 +1,4 @@
-import { Task, WeekDate, MonthDate, DisplayDate, MonthDisplay } from "./RetroPlanner.types";
+import { Task, TaskStatus, WeekDate, MonthDate, DisplayDate, MonthDisplay, ViewMode } from "./RetroPlanner.types";
 import { weekdays, weekdaysEn, monthNames, monthNamesEn, DAYS_IN_WEEK, CALENDAR_GRID_TOTAL_CELLS, LAST_DAY_OF_WEEK_INDEX } from "./RetroPlanner.constants";
 import type { GoogleCalendarEvent } from "../../../../lib/googleCalendar";
 
@@ -184,6 +184,9 @@ export function convertGoogleCalendarEventToTask(event: GoogleCalendarEvent): Ta
   const eventTime = extractTimeFromDateTime(event.start.dateTime, event.start.date);
   const eventId = hashStringToNumber(event.id);
   const { title, category, priority, completed } = parseTitleMetadata(event.summary || "제목 없음");
+  
+  // completed 상태에 따라 status 결정
+  const status: TaskStatus = completed ? "done" : "todo";
 
   return {
     id: -eventId,
@@ -192,12 +195,13 @@ export function convertGoogleCalendarEventToTask(event: GoogleCalendarEvent): Ta
     category,
     priority,
     completed,
+    status,
     date: eventDate,
     googleEventId: event.id,
   };
 }
 
-export function getDateRangeForViewMode(selectedDate: Date, viewMode: "today" | "week" | "month"): { timeMin: string; timeMax: string } {
+export function getDateRangeForViewMode(selectedDate: Date, viewMode: ViewMode): { timeMin: string; timeMax: string } {
   const now = new Date(selectedDate);
   
   if (viewMode === "today") {
