@@ -65,14 +65,18 @@ export function RetroPlanner() {
     todayTasks,
   } = useRetroPlanner();
 
+  const isHorizontalScrollView = viewMode === "timeline" || viewMode === "kanban";
+
   return (
-    <div className={`${containerStyles.wrapper} ${viewMode === "timeline" ? "overflow-x-auto" : ""}`}>
+    <div 
+      className={`${containerStyles.wrapper} ${isHorizontalScrollView ? "!max-w-none !w-[calc(100vw-2rem)] md:!w-[calc(100vw-4rem)] overflow-x-auto" : ""}`}
+    >
       <RetroPlannerFloatingDecorations />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`${containerStyles.mainContainer} ${viewMode === "timeline" ? "overflow-x-visible" : ""}`}
+        className={`${containerStyles.mainContainer} ${isHorizontalScrollView ? "w-full" : ""}`}
         style={getWindowBorderStyle()}
       >
         <RetroPlannerTitleBar
@@ -101,17 +105,17 @@ export function RetroPlanner() {
                 onCategoryChange={setSelectedCategory}
               />
 
-              <div className={`flex ${viewMode === "timeline" ? "overflow-x-visible" : ""}`}>
+              <div className="flex">
                 <RetroPlannerToolbox 
                   onAddTask={() => setShowEditor(true)}
                   plannerMode={plannerMode}
                   onPlannerModeChange={setPlannerMode}
                 />
 
-                <div className={`${containerStyles.canvas} ${viewMode === "timeline" ? "overflow-x-visible min-w-0" : ""}`}>
-                  <div className={`${containerStyles.canvasArea} ${viewMode === "timeline" ? "overflow-x-visible" : ""}`} style={{ borderColor: "#808080" }}>
+                <div className={`${containerStyles.canvas} ${isHorizontalScrollView ? "min-w-0 w-full" : ""}`}>
+                  <div className={`${containerStyles.canvasArea} ${isHorizontalScrollView ? "overflow-x-auto" : ""}`} style={{ borderColor: "#808080" }}>
                     <div 
-                      className={`w-full h-full relative ${viewMode === "timeline" ? "overflow-x-visible" : ""}`}
+                      className="w-full h-full relative"
                       style={getCanvasGradient()}
                     >
                       <div 
@@ -121,7 +125,7 @@ export function RetroPlanner() {
 
                       <RetroPlannerCanvasDecorations />
 
-                      <div className={`relative z-10 p-4 min-h-[400px] ${viewMode === "timeline" ? "overflow-x-visible w-auto" : ""}`}>
+                      <div className={`relative z-10 p-4 min-h-[400px] ${isHorizontalScrollView ? "w-full" : ""}`}>
                         {viewMode === "timeline" && (
                           <RetroPlannerTimelineView
                             tasks={tasks}

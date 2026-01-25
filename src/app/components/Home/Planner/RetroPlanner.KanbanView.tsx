@@ -194,7 +194,7 @@ function KanbanColumn({
     <div 
       ref={columnRef}
       className={`
-        flex-1 min-w-[280px] max-w-[400px]
+        flex-1 min-w-[280px]
         bg-white border-4 border-black
         shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)]
         flex flex-col
@@ -335,7 +335,9 @@ export function RetroPlannerKanbanView({
   };
 
   return (
-    <div className="p-4">
+    <div 
+      className="p-4 w-full"
+    >
       {/* Kanban Header */}
       <div 
         className="text-center mb-6"
@@ -353,7 +355,12 @@ export function RetroPlannerKanbanView({
       </div>
 
       {/* Kanban Columns */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div 
+        className="flex gap-4 pb-4 w-full overflow-x-auto"
+        style={{
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {kanbanColumns.map((column) => (
           <KanbanColumn
             key={column.id}

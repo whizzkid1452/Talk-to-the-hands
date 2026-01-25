@@ -124,7 +124,7 @@ export function RetroPlannerTimelineView({
   };
 
   return (
-    <div className="w-full relative" style={{ minWidth: "max-content" }}>
+    <div className="w-full relative">
       {/* Floating decorations (레퍼런스 스타일) */}
       {[...Array(5)].map((_, i) => (
         <motion.div
@@ -156,12 +156,10 @@ export function RetroPlannerTimelineView({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#f8bbd0] border-4 border-[#FF1493] p-4 relative"
+        className="bg-[#f8bbd0] border-4 border-[#FF1493] p-4 relative w-full"
         style={{
           imageRendering: "pixelated",
           boxShadow: "8px 8px 0px 0px rgba(255,20,147,0.3)",
-          width: "100%",
-          maxWidth: "100%",
         }}
       >
         {/* Header */}
@@ -217,14 +215,10 @@ export function RetroPlannerTimelineView({
         {/* Timeline Grid */}
         <div
           ref={scrollContainerRef}
-          className="bg-white border-4 border-[#FF1493] overflow-x-auto overflow-y-visible"
+          className="bg-white border-4 border-[#FF1493] overflow-x-auto overflow-y-visible w-full"
           style={{ 
             imageRendering: "pixelated",
-            width: "100%",
-            maxWidth: "100%",
             WebkitOverflowScrolling: "touch",
-            overflowX: "auto",
-            overflowY: "visible",
           }}
         >
           <div style={{ width: `${totalWidth + 224}px`, minWidth: `${totalWidth + 224}px` }}>
