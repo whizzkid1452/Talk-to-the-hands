@@ -443,6 +443,8 @@ function KanbanColumn({
 export function RetroPlannerKanbanView() {
   const {
     cards,
+    isLoading,
+    error,
     editingCard,
     isAddingCard,
     addingToColumn,
@@ -455,6 +457,7 @@ export function RetroPlannerKanbanView() {
     cancelAddingCard,
     startEditingCard,
     cancelEditingCard,
+    refreshCards,
   } = useKanbanContext();
 
   const [dragInfo, setDragInfo] = useState<DragInfo | null>(null);
@@ -486,6 +489,42 @@ export function RetroPlannerKanbanView() {
   const handleDragLeaveColumn = () => {
     setDropTargetIndex(null);
   };
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="p-4 w-full">
+        <div className="text-center py-16" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="text-4xl mb-4 inline-block"
+          >
+            ⏳
+          </motion.div>
+          <p className="text-lg text-[#FF1493]">칸반 카드 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="p-4 w-full">
+        <div className="text-center py-16 bg-red-50 border-4 border-red-400" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+          <div className="text-4xl mb-4">❌</div>
+          <p className="text-lg text-red-600 mb-4">{error}</p>
+          <button
+            onClick={refreshCards}
+            className="px-4 py-2 bg-[#FF1493] text-white border-3 border-[#C2185B] hover:bg-[#C2185B]"
+          >
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 w-full">

@@ -1,58 +1,55 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { KanbanCard, TaskStatus } from "./RetroPlanner.types";
+import {
+  fetchKanbanCards,
+  createKanbanCard,
+  updateKanbanCard,
+  deleteKanbanCard,
+  reorderKanbanCard,
+  type KanbanCardDB,
+} from "../../../../lib/kanbanCards";
 
-const initialKanbanCards: KanbanCard[] = [
-  {
-    id: 1,
-    title: "프로젝트 기획서 작성",
-    description: "새로운 프로젝트의 기획서를 작성합니다",
-    status: "todo",
-    priority: "high",
-    category: "업무 Work",
-    order: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    title: "디자인 시스템 구축",
-    description: "컴포넌트 라이브러리 설계",
-    status: "in_progress",
-    priority: "high",
-    category: "업무 Work",
-    order: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    title: "TypeScript 학습",
-    description: "고급 타입 시스템 이해하기",
-    status: "in_progress",
-    priority: "medium",
-    category: "공부 Study",
-    order: 1,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 4,
-    title: "코드 리뷰 완료",
-    description: "팀원 PR 리뷰",
-    status: "done",
-    priority: "medium",
-    category: "업무 Work",
-    order: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+// DB 모델을 프론트엔드 모델로 변환
+function dbToKanbanCard(dbCard: KanbanCardDB): KanbanCard {
+  return {
+    id: dbCard.id,
+    title: dbCard.title,
+    description: dbCard.description || undefined,
+    status: dbCard.status as TaskStatus,
+    priority: dbCard.priority,
+    category: dbCard.category,
+    order: dbCard.order_index,
+    createdAt: dbCard.created_at,
+    updatedAt: dbCard.updated_at,
+  };
+}
 
 export function useKanbanBoard() {
-  const [cards, setCards] = useState<KanbanCard[]>(initialKanbanCards);
+  const [cards, setCards] = useState<KanbanCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<KanbanCard | null>(null);
   const [isAddingCard, setIsAddingCard] = useState(false);
   const [addingToColumn, setAddingToColumn] = useState<TaskStatus | null>(null);
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    loadCards();
+  }, []);
+
+  const loadCards = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const dbCards = await fetchKanbanCards();
+      setCards(dbCards.map(dbToKanbanCard));
+    } catch (err) {
+      console.error("칸반 카드 로드 실패:", err);
+      setError("카드를 불러오는데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getCardsByStatus = useCallback((status: TaskStatus): KanbanCard[] => {
     return cards
@@ -60,77 +57,99 @@ export function useKanbanBoard() {
       .sort((a, b) => a.order - b.order);
   }, [cards]);
 
-  const addCard = useCallback((cardData: {
+  const addCard = useCallback(async (cardData: {
     title: string;
     description?: string;
     status: TaskStatus;
     priority: "high" | "medium" | "low";
     category: string;
   }) => {
-    const cardsInColumn = cards.filter((c) => c.status === cardData.status);
-    const maxOrder = cardsInColumn.length > 0 
-      ? Math.max(...cardsInColumn.map((c) => c.order)) 
-      : -1;
+    try {
+      const newCard = await createKanbanCard({
+        title: cardData.title,
+        description: cardData.description,
+        status: cardData.status,
+        priority: cardData.priority,
+        category: cardData.category,
+      });
+      
+      setCards((prev) => [...prev, dbToKanbanCard(newCard)]);
+      setIsAddingCard(false);
+      setAddingToColumn(null);
+    } catch (err) {
+      console.error("카드 추가 실패:", err);
+      setError("카드 추가에 실패했습니다.");
+    }
+  }, []);
 
-    const newCard: KanbanCard = {
-      id: Date.now(),
-      ...cardData,
-      order: maxOrder + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  const updateCard = useCallback(async (cardId: number, updates: Partial<KanbanCard>) => {
+    try {
+      const dbUpdates: Record<string, unknown> = {};
+      if (updates.title !== undefined) dbUpdates.title = updates.title;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.status !== undefined) dbUpdates.status = updates.status;
+      if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+      if (updates.order !== undefined) dbUpdates.order_index = updates.order;
 
-    setCards((prev) => [...prev, newCard]);
-    setIsAddingCard(false);
-    setAddingToColumn(null);
+      const updatedCard = await updateKanbanCard(cardId, dbUpdates as any);
+      
+      setCards((prev) => prev.map((card) => 
+        card.id === cardId ? dbToKanbanCard(updatedCard) : card
+      ));
+      setEditingCard(null);
+    } catch (err) {
+      console.error("카드 수정 실패:", err);
+      setError("카드 수정에 실패했습니다.");
+    }
+  }, []);
+
+  const deleteCard = useCallback(async (cardId: number) => {
+    try {
+      await deleteKanbanCard(cardId);
+      setCards((prev) => prev.filter((card) => card.id !== cardId));
+    } catch (err) {
+      console.error("카드 삭제 실패:", err);
+      setError("카드 삭제에 실패했습니다.");
+    }
+  }, []);
+
+  const changeStatus = useCallback(async (cardId: number, newStatus: TaskStatus) => {
+    try {
+      const cardsInNewColumn = cards.filter((c) => c.status === newStatus && c.id !== cardId);
+      const maxOrder = cardsInNewColumn.length > 0 
+        ? Math.max(...cardsInNewColumn.map((c) => c.order)) 
+        : -1;
+
+      await reorderKanbanCard(cardId, newStatus, maxOrder + 1);
+      
+      // 로컬 상태 업데이트
+      setCards((prev) => prev.map((c) => 
+        c.id === cardId 
+          ? { ...c, status: newStatus, order: maxOrder + 1, updatedAt: new Date().toISOString() }
+          : c
+      ));
+    } catch (err) {
+      console.error("상태 변경 실패:", err);
+      setError("상태 변경에 실패했습니다.");
+    }
   }, [cards]);
 
-  const updateCard = useCallback((cardId: number, updates: Partial<KanbanCard>) => {
-    setCards((prev) => prev.map((card) => 
-      card.id === cardId 
-        ? { ...card, ...updates, updatedAt: new Date().toISOString() }
-        : card
-    ));
-    setEditingCard(null);
-  }, []);
-
-  const deleteCard = useCallback((cardId: number) => {
-    setCards((prev) => prev.filter((card) => card.id !== cardId));
-  }, []);
-
-  const changeStatus = useCallback((cardId: number, newStatus: TaskStatus) => {
+  const reorderCard = useCallback(async (cardId: number, newStatus: TaskStatus, targetIndex: number) => {
     const card = cards.find((c) => c.id === cardId);
     if (!card) return;
 
-    const cardsInNewColumn = cards.filter((c) => c.status === newStatus && c.id !== cardId);
-    const maxOrder = cardsInNewColumn.length > 0 
-      ? Math.max(...cardsInNewColumn.map((c) => c.order)) 
-      : -1;
-
-    setCards((prev) => prev.map((c) => 
-      c.id === cardId 
-        ? { ...c, status: newStatus, order: maxOrder + 1, updatedAt: new Date().toISOString() }
-        : c
-    ));
-  }, [cards]);
-
-  const reorderCard = useCallback((cardId: number, newStatus: TaskStatus, targetIndex: number) => {
-    const card = cards.find((c) => c.id === cardId);
-    if (!card) return;
-
-    // 해당 status의 카드들 가져오기 (드래그 중인 카드 제외)
+    // 낙관적 업데이트: 먼저 로컬 상태 변경
     const cardsInTargetColumn = cards
       .filter((c) => c.status === newStatus && c.id !== cardId)
       .sort((a, b) => a.order - b.order);
 
-    // 새 순서 계산
     const updatedCardsInColumn = [
       ...cardsInTargetColumn.slice(0, targetIndex),
       { ...card, status: newStatus },
       ...cardsInTargetColumn.slice(targetIndex),
     ];
 
-    // order 값 재할당
     const orderUpdates: Map<number, number> = new Map();
     updatedCardsInColumn.forEach((c, index) => {
       orderUpdates.set(c.id, index);
@@ -150,6 +169,16 @@ export function useKanbanBoard() {
       }
       return c;
     }));
+
+    // 서버에 업데이트
+    try {
+      await reorderKanbanCard(cardId, newStatus, targetIndex);
+    } catch (err) {
+      console.error("순서 변경 실패:", err);
+      setError("순서 변경에 실패했습니다.");
+      // 실패 시 다시 로드
+      loadCards();
+    }
   }, [cards]);
 
   const startAddingCard = useCallback((column: TaskStatus) => {
@@ -170,8 +199,14 @@ export function useKanbanBoard() {
     setEditingCard(null);
   }, []);
 
+  const refreshCards = useCallback(() => {
+    loadCards();
+  }, []);
+
   return {
     cards,
+    isLoading,
+    error,
     editingCard,
     isAddingCard,
     addingToColumn,
@@ -185,5 +220,6 @@ export function useKanbanBoard() {
     cancelAddingCard,
     startEditingCard,
     cancelEditingCard,
+    refreshCards,
   };
 }

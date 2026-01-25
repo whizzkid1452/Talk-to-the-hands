@@ -4,6 +4,8 @@ import type { KanbanCard, TaskStatus } from "./RetroPlanner.types";
 
 interface KanbanContextType {
   cards: KanbanCard[];
+  isLoading: boolean;
+  error: string | null;
   editingCard: KanbanCard | null;
   isAddingCard: boolean;
   addingToColumn: TaskStatus | null;
@@ -23,6 +25,7 @@ interface KanbanContextType {
   cancelAddingCard: () => void;
   startEditingCard: (card: KanbanCard) => void;
   cancelEditingCard: () => void;
+  refreshCards: () => void;
 }
 
 const KanbanContext = createContext<KanbanContextType | null>(null);

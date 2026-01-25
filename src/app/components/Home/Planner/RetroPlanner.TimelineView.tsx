@@ -79,7 +79,7 @@ export function RetroPlannerTimelineView({
   startDate,
   endDate,
 }: RetroPlannerTimelineViewProps) {
-  const { cards } = useKanbanContext();
+  const { cards, isLoading } = useKanbanContext();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const dates = useMemo(() => getDatesInRange(startDate, endDate), [startDate, endDate]);
   const dayColumnWidth = dates.length > 14 ? 40 : 80;
@@ -114,6 +114,22 @@ export function RetroPlannerTimelineView({
     const targetLeft = Math.max(0, todayPosition - container.clientWidth / 2);
     container.scrollTo({ left: targetLeft, behavior: "smooth" });
   };
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="w-full p-8 text-center" style={{ fontFamily: "'DungGeunMo', monospace" }}>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="text-4xl mb-4 inline-block"
+        >
+          ⏳
+        </motion.div>
+        <p className="text-lg text-[#FF1493]">타임라인 불러오는 중...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full relative">
